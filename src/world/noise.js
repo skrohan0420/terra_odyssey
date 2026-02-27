@@ -59,7 +59,7 @@ function perlin(x, z) {
 
 export function getHeight(x, z) {
   let total = 0;
-  let frequency = 0.05;
+  let frequency = 0.01;
   let amplitude = 15;
   let persistence = 0.5;
   let octaves = 2;
