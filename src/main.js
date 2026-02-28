@@ -1,14 +1,14 @@
 import * as THREE from "three";
-import { createScene } from "./core/scene";
-import { createRenderer } from "./core/renderer";
-import { PlayerController } from "./player/controller";
-import { DebugOverlay } from "./core/debugOverlay";
+import { createScene } from "./engine/renderer/scene";
+import { createRenderer } from "./engine/renderer/renderer";
+import { PlayerController } from "./player/controller/playerController";
+import { DebugOverlay } from "./engine/debug/debugOverlay";
 import {
     CAMERA_FOV,
     CAMERA_FAR_PALE,
     CAMERA_NEAR_PALE
-} from "./config";
-import { ChunkManager } from "./world/chunkManager";
+} from "./config/config";
+import { ChunkManager } from "./world/chunk/chunkManager";
 
 /* ========================= */
 /*        SCENE SETUP        */
@@ -35,7 +35,7 @@ camera.position.set(0, 130, 0);
 /*       WORLD GEN           */
 /* ========================= */
 
-const renderDistance = 16;
+const renderDistance = 8;
 
 const chunkManager = new ChunkManager(scene, renderDistance);
 

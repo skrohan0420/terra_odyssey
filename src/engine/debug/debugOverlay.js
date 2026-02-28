@@ -1,5 +1,4 @@
 import Stats from "stats.js";
-
 export class DebugOverlay {
     constructor(renderer, camera, getChunkCount) {
         this.renderer = renderer;

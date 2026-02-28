@@ -1,4 +1,4 @@
-import { SEED } from "../config";
+import { SEED } from "../../config/config";
 
 function mulberry32(seed) {
   return function () {

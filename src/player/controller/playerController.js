@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { CONTROLLER_SPEED, CONTROLLER_SENSiTIVITY } from "../config"
+import { CONTROLLER_SPEED, CONTROLLER_SENSiTIVITY } from "../../config/config"
 
 export class PlayerController {
   constructor(camera, domElement) {

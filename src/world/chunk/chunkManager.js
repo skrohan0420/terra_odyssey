@@ -1,5 +1,5 @@
 import { generateChunk } from "./chunk";
-import { CHUNK_SIZE } from "../config";
+import { CHUNK_SIZE } from "../../config/config";
 
 export class ChunkManager {
     constructor(scene, renderDistance) {

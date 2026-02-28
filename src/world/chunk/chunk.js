@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { CHUNK_SIZE, BLOCK_SIZE } from "../config";
-import { getHeight } from "./noise";
+import { CHUNK_SIZE, BLOCK_SIZE } from "../../config/config";
+import { getHeight } from "../generation/noise";
 
 const geometry = new THREE.BoxGeometry(
   BLOCK_SIZE,
