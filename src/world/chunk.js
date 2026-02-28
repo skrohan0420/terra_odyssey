@@ -59,10 +59,10 @@ export function generateChunk(scene, chunkX, chunkZ) {
 
     mesh.setColorAt(i, color);
   });
-  
+
 
   mesh.instanceMatrix.needsUpdate = true;
   mesh.instanceColor.needsUpdate = true;
-
   scene.add(mesh);
+  return mesh;
 }

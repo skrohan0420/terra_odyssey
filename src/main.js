@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { createScene } from "./core/scene";
 import { createRenderer } from "./core/renderer";
-import { generateChunk } from "./world/chunk";
 import { PlayerController } from "./player/controller";
 import { DebugOverlay } from "./core/debugOverlay";
 import {
@@ -9,6 +8,7 @@ import {
     CAMERA_FAR_PALE,
     CAMERA_NEAR_PALE
 } from "./config";
+import { ChunkManager } from "./world/chunkManager";
 
 /* ========================= */
 /*        SCENE SETUP        */
@@ -28,19 +28,16 @@ const camera = new THREE.PerspectiveCamera(
     CAMERA_FAR_PALE
 );
 
-camera.position.set(0, 20, 400);
+camera.position.set(0, 130, 0);
+// camera.lookAt(0, 0, 0);
 
 /* ========================= */
 /*       WORLD GEN           */
 /* ========================= */
 
-const renderDistance = 4;
+const renderDistance = 16;
 
-for (let x = -renderDistance; x < renderDistance; x++) {
-    for (let z = -renderDistance; z < renderDistance; z++) {
-        generateChunk(scene, x, z);
-    }
-}
+const chunkManager = new ChunkManager(scene, renderDistance);
 
 /* ========================= */
 /*        CONTROLLER         */
@@ -58,7 +55,7 @@ const controller = new PlayerController(
 const debug = new DebugOverlay(
     renderer,
     camera,
-    () => (renderDistance) 
+    () => chunkManager.getLoadedChunkCount()
 );
 
 /* ========================= */
@@ -74,13 +71,15 @@ window.addEventListener("resize", () => {
 /* ========================= */
 /*        ANIMATION LOOP     */
 /* ========================= */
-
 function animate() {
     requestAnimationFrame(animate);
 
     debug.begin();
 
     controller.update();
+
+    chunkManager.update(camera.position);
+
     renderer.render(scene, camera);
 
     debug.update();
