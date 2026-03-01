@@ -10,7 +10,7 @@ export const BLOCK_TYPES = {
 export const SEED = 420;
 
 export const CAMERA_FOV = 50 
-export const CAMERA_FAR_PALE = 1000
+export const CAMERA_FAR_PALE = 500
 export const CAMERA_NEAR_PALE = 0.1
 
 export const CONTROLLER_SPEED = 2

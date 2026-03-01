@@ -35,7 +35,7 @@ camera.position.set(0, 130, 0);
 /*       WORLD GEN           */
 /* ========================= */
 
-const renderDistance = 8;
+const renderDistance = 16;
 
 const chunkManager = new ChunkManager(scene, renderDistance);
 
