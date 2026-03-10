@@ -9,13 +9,13 @@ import {
     CAMERA_NEAR_PALE
 } from "./config/config";
 import { ChunkManager } from "./world/chunk/chunkManager";
-
 /* ========================= */
 /*        SCENE SETUP        */
 /* ========================= */
 
 const scene = createScene();
 const renderer = createRenderer();
+const clock = new THREE.Clock();
 
 /* ========================= */
 /*          CAMERA           */
@@ -35,7 +35,7 @@ camera.position.set(0, 40, 0);
 /*       WORLD GEN           */
 /* ========================= */
 
-const renderDistance = 8;
+const renderDistance = 16;
 
 const chunkManager = new ChunkManager(scene, renderDistance);
 
@@ -73,10 +73,10 @@ window.addEventListener("resize", () => {
 /* ========================= */
 function animate() {
     requestAnimationFrame(animate);
-
+    const delta = clock.getDelta();
     debug.begin();
 
-    controller.update();
+    controller.update(delta);
 
     chunkManager.update(camera.position);
 

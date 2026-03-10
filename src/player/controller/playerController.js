@@ -1,12 +1,14 @@
 import * as THREE from "three";
-import { CONTROLLER_SPEED, CONTROLLER_SENSiTIVITY } from "../../config/config"
+import { CONTROLLER_SPEED, CONTROLLER_SENSiTIVITY } from "../../config/config";
 
 export class PlayerController {
+
   constructor(camera, domElement) {
+
     this.camera = camera;
     this.domElement = domElement;
 
-    // Movement settings
+    // Settings
     this.speed = CONTROLLER_SPEED;
     this.sensitivity = CONTROLLER_SENSiTIVITY;
 
@@ -14,14 +16,22 @@ export class PlayerController {
     this.yaw = 0;
     this.pitch = 0;
 
-    // Input state
+    // Input
     this.keys = {};
+
+    // Reusable vectors (prevents garbage collection)
+    this.direction = new THREE.Vector3();
+    this.forward = new THREE.Vector3();
+    this.right = new THREE.Vector3();
+
+    this.euler = new THREE.Euler(0, 0, 0, "YXZ");
 
     this._initEvents();
   }
 
   _initEvents() {
-    // Keyboard
+
+    // Keyboard input
     document.addEventListener("keydown", (e) => {
       this.keys[e.code] = true;
     });
@@ -35,49 +45,72 @@ export class PlayerController {
       this.domElement.requestPointerLock();
     });
 
-    // Mouse look
+    // Mouse movement
     document.addEventListener("mousemove", (e) => {
-      if (document.pointerLockElement === this.domElement) {
-        this.yaw -= e.movementX * this.sensitivity;
-        this.pitch -= e.movementY * this.sensitivity;
 
-        // Clamp vertical look
-        this.pitch = Math.max(
-          -Math.PI / 2,
-          Math.min(Math.PI / 2, this.pitch)
-        );
+      if (document.pointerLockElement !== this.domElement) return;
 
-        this.camera.rotation.order = "YXZ";
-        this.camera.rotation.y = this.yaw;
-        this.camera.rotation.x = this.pitch;
-      }
+      this.yaw -= e.movementX * this.sensitivity;
+      this.pitch -= e.movementY * this.sensitivity;
+
+      // Clamp vertical rotation
+      this.pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.pitch));
+
+      this.euler.set(this.pitch, this.yaw, 0);
+
+      this.camera.quaternion.setFromEuler(this.euler);
+
     });
+
   }
 
-  update() {
-    const direction = new THREE.Vector3();
+  update(delta) {
 
-    if (this.keys["KeyW"]) direction.z += 1;
-    if (this.keys["KeyS"]) direction.z -= 1;
-    if (this.keys["KeyA"]) direction.x -= 1;
-    if (this.keys["KeyD"]) direction.x += 1;
+    this.direction.set(0, 0, 0);
 
-    direction.normalize();
+    // WASD movement
+    if (this.keys["KeyW"]) this.direction.z += 1;
+    if (this.keys["KeyS"]) this.direction.z -= 1;
+    if (this.keys["KeyA"]) this.direction.x -= 1;
+    if (this.keys["KeyD"]) this.direction.x += 1;
 
-    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(
-      this.camera.quaternion
-    );
-    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(
-      this.camera.quaternion
-    );
+    const velocity = this.speed * delta;
 
-    this.camera.position.addScaledVector(
-      forward,
-      direction.z * this.speed
-    );
-    this.camera.position.addScaledVector(
-      right,
-      direction.x * this.speed
-    );
+    // Horizontal movement
+    if (this.direction.lengthSq() > 0) {
+
+      this.direction.normalize();
+
+      this.forward.set(0, 0, -1).applyQuaternion(this.camera.quaternion);
+      this.right.set(1, 0, 0).applyQuaternion(this.camera.quaternion);
+
+      // Prevent forward movement from affecting Y axis
+      this.forward.y = 0;
+      this.right.y = 0;
+
+      this.forward.normalize();
+      this.right.normalize();
+
+      this.camera.position.addScaledVector(
+        this.forward,
+        this.direction.z * velocity
+      );
+
+      this.camera.position.addScaledVector(
+        this.right,
+        this.direction.x * velocity
+      );
+    }
+
+    // Vertical movement
+    if (this.keys["Space"]) {
+      this.camera.position.y += velocity;
+    }
+
+    if (this.keys["ShiftLeft"]) {
+      this.camera.position.y -= velocity;
+    }
+
   }
+
 }

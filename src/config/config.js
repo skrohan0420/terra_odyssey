@@ -13,5 +13,5 @@ export const CAMERA_FOV = 50
 export const CAMERA_FAR_PALE = 500
 export const CAMERA_NEAR_PALE = 0.1
 
-export const CONTROLLER_SPEED = 2
+export const CONTROLLER_SPEED = 50
 export const CONTROLLER_SENSiTIVITY = 0.005

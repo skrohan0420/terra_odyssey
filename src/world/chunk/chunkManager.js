@@ -2,11 +2,13 @@ import { generateChunk } from "./chunk";
 import { CHUNK_SIZE } from "../../config/config";
 
 export class ChunkManager {
+
     constructor(scene, renderDistance) {
+
         this.scene = scene;
         this.renderDistance = renderDistance;
 
-        this.loadedChunks = new Map(); // key = "x,z"
+        this.loadedChunks = new Map();
         this.currentPlayerChunk = { x: null, z: null };
     }
 
@@ -19,30 +21,25 @@ export class ChunkManager {
     }
 
     update(playerPosition) {
+
         const playerChunkX = this.worldToChunkCoord(playerPosition.x);
         const playerChunkZ = this.worldToChunkCoord(playerPosition.z);
 
-        // Only update if player moved into new chunk
         if (
             playerChunkX === this.currentPlayerChunk.x &&
             playerChunkZ === this.currentPlayerChunk.z
-        ) {
-            return;
-        }
+        ) return;
 
-        this.currentPlayerChunk = {
-            x: playerChunkX,
-            z: playerChunkZ
-        };
+        this.currentPlayerChunk = { x: playerChunkX, z: playerChunkZ };
 
         this.updateVisibleChunks();
     }
 
     updateVisibleChunks() {
+
         const { x: centerX, z: centerZ } = this.currentPlayerChunk;
 
         const newChunkSet = new Set();
-
         const radius = this.renderDistance;
 
         for (let x = -radius; x <= radius; x++) {
@@ -55,25 +52,26 @@ export class ChunkManager {
                 const chunkZ = centerZ + z;
 
                 const key = this.getChunkKey(chunkX, chunkZ);
+
                 newChunkSet.add(key);
 
                 if (!this.loadedChunks.has(key)) {
+
                     const mesh = generateChunk(this.scene, chunkX, chunkZ);
+
                     this.loadedChunks.set(key, mesh);
                 }
             }
         }
-        // Remove chunks outside range
+
         for (const [key, mesh] of this.loadedChunks.entries()) {
+
             if (!newChunkSet.has(key)) {
 
                 this.scene.remove(mesh);
 
-                if (mesh.userData.border) {
-                    this.scene.remove(mesh.userData.border);
-                    mesh.userData.border.geometry.dispose();
-                    mesh.userData.border.material.dispose();
-                }
+                mesh.geometry.dispose();
+                mesh.material.dispose();
 
                 this.loadedChunks.delete(key);
             }
