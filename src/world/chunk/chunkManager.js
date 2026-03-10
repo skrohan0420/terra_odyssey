@@ -43,8 +43,14 @@ export class ChunkManager {
 
         const newChunkSet = new Set();
 
-        for (let x = -this.renderDistance; x <= this.renderDistance; x++) {
-            for (let z = -this.renderDistance; z <= this.renderDistance; z++) {
+        const radius = this.renderDistance;
+
+        for (let x = -radius; x <= radius; x++) {
+
+            const zMax = Math.floor(Math.sqrt(radius * radius - x * x));
+
+            for (let z = -zMax; z <= zMax; z++) {
+
                 const chunkX = centerX + x;
                 const chunkZ = centerZ + z;
 
@@ -57,7 +63,6 @@ export class ChunkManager {
                 }
             }
         }
-
         // Remove chunks outside range
         for (const [key, mesh] of this.loadedChunks.entries()) {
             if (!newChunkSet.has(key)) {
