@@ -28,14 +28,14 @@ const camera = new THREE.PerspectiveCamera(
     CAMERA_FAR_PALE
 );
 
-camera.position.set(0, 130, 0);
+camera.position.set(0, 40, 0);
 // camera.lookAt(0, 0, 0);
 
 /* ========================= */
 /*       WORLD GEN           */
 /* ========================= */
 
-const renderDistance = 16;
+const renderDistance = 8;
 
 const chunkManager = new ChunkManager(scene, renderDistance);
 
