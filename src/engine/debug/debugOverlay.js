@@ -1,10 +1,12 @@
 import Stats from "stats.js";
+import { CHUNK_SIZE } from "../../config/config";
 
 export class DebugOverlay {
-    constructor(renderer, camera, getChunkCount) {
+    constructor(renderer, camera, getChunkCount, getInspectorState) {
         this.renderer = renderer;
         this.camera = camera;
         this.getChunkCount = getChunkCount;
+        this.getInspectorState = getInspectorState;
 
         this.enabled = true;
 
@@ -26,7 +28,7 @@ export class DebugOverlay {
             padding: 10px 14px;
             background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(6px);
-            color: #00ff6a;
+            color: #ffffff;
             font-family: monospace;
             font-size: 12px;
             line-height: 1.6;
@@ -102,19 +104,33 @@ export class DebugOverlay {
         if (this.fps < 50) fpsColor = "#ffff00";
         if (this.fps < 30) fpsColor = "#ff4444";
 
+        const inspector = this.getInspectorState ? this.getInspectorState() : false;
+
+        const inspectorColor = inspector ? "#35ff50" : "#ff1f1f";
+        const inspectorText = inspector ? "ON" : "OFF";
+
+        const chunkX = Math.floor(this.camera.position.x / CHUNK_SIZE);
+        const chunkZ = Math.floor(this.camera.position.z / CHUNK_SIZE);
+
+
         this.infoEl.innerHTML = `
-            <div>FPS: <span style="color:${fpsColor}">${this.fps}</span></div>
-            <div>Draw Calls: <span style="color:lightblue">${drawCalls}</span></div>
-            <div>Triangles: <span style="color:lightblue">${triangles.toLocaleString()}</span></div>
-            <div>Geometries: <span style="color:lightblue">${geometries}</span></div>
-            <div>Textures: <span style="color:lightblue">${textures}</span></div>
-            <div>Camera: <span style="color:lightblue">
+                <div>FPS: <span style="color:${fpsColor}">${this.fps}</span></div>
+                <div>Draw Calls: <span style="color:white">${drawCalls}</span></div>
+                <div>Triangles: <span style="color:white">${triangles.toLocaleString()}</span></div>
+                <div>Geometries: <span style="color:white">${geometries}</span></div>
+                <div>Textures: <span style="color:white">${textures}</span></div>
+                
+                <div>Camera: <span style="color:white">
                 ${this.camera.position.x.toFixed(1)},
                 ${this.camera.position.y.toFixed(1)},
                 ${this.camera.position.z.toFixed(1)}
-            </span></div>
-            <div>Chunks: <span style="color:lightblue">${this.getChunkCount()}</span></div>
-        `;
+                </span></div>
+                <div>Chunk: <span style="color:white">(${chunkX},${chunkZ})</span></div>
+
+                <div>Chunks: <span style="color:white">${this.getChunkCount()}</span></div>
+
+                <div>Inspect Mode: <span style="color:${inspectorColor}">${inspectorText}</span></div>
+            `;
     }
 
     /* ========================= */

@@ -9,6 +9,10 @@ import {
     CAMERA_NEAR_PALE
 } from "./config/config";
 import { ChunkManager } from "./world/chunk/chunkManager";
+import { loadPlayerState, savePlayerState } from "./player/playerState";
+import { InspectorMode } from "./engine/debug/inspectorMode";
+
+
 /* ========================= */
 /*        SCENE SETUP        */
 /* ========================= */
@@ -28,8 +32,25 @@ const camera = new THREE.PerspectiveCamera(
     CAMERA_FAR_PALE
 );
 
-camera.position.set(0, 40, 0);
-// camera.lookAt(0, 0, 0);
+
+const state = loadPlayerState();
+
+if (state) {
+    camera.position.set(
+        state.position.x,
+        state.position.y,
+        state.position.z
+    );
+
+    camera.rotation.set(
+        state.rotation.x,
+        state.rotation.y,
+        state.rotation.z
+    );
+} else {
+    camera.position.set(0, 40, 0);
+    camera.lookAt(100, 0, 0);
+}
 
 /* ========================= */
 /*       WORLD GEN           */
@@ -55,7 +76,8 @@ const controller = new PlayerController(
 const debug = new DebugOverlay(
     renderer,
     camera,
-    () => chunkManager.getLoadedChunkCount()
+    () => chunkManager.getLoadedChunkCount(),
+    () => inspector.enabled
 );
 
 /* ========================= */
@@ -68,6 +90,12 @@ window.addEventListener("resize", () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+const inspector = new InspectorMode(
+    camera,
+    controller,
+    chunkManager
+);
+
 /* ========================= */
 /*        ANIMATION LOOP     */
 /* ========================= */
@@ -77,8 +105,12 @@ function animate() {
     debug.begin();
 
     controller.update(delta);
+    inspector.update(delta);
 
-    chunkManager.update(camera.position);
+    if (!inspector.enabled) {
+        chunkManager.update(camera.position);
+    }
+    savePlayerState(camera);
 
     renderer.render(scene, camera);
 
