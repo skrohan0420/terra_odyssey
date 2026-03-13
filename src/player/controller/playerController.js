@@ -103,11 +103,11 @@ export class PlayerController {
     }
 
     // Vertical movement
-    if (this.keys["Space"]) {
+    if (this.keys["KeyQ"]) {
       this.camera.position.y += velocity;
     }
 
-    if (this.keys["ShiftLeft"]) {
+    if (this.keys["KeyE"]) {
       this.camera.position.y -= velocity;
     }
 
