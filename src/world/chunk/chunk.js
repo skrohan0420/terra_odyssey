@@ -61,6 +61,8 @@ export function generateChunk(scene, chunkX, chunkZ) {
   mesh.instanceColor.needsUpdate = true;
 
   mesh.userData = {
+    chunkX,
+    chunkZ,
     columnHeights,
     revealBlock(worldX, worldZ, y) {
 

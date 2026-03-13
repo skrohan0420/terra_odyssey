@@ -28,11 +28,15 @@ export class ChunkManager {
         if (
             playerChunkX === this.currentPlayerChunk.x &&
             playerChunkZ === this.currentPlayerChunk.z
-        ) return;
+        ) {
+            return false;
+        }
 
         this.currentPlayerChunk = { x: playerChunkX, z: playerChunkZ };
 
         this.updateVisibleChunks();
+
+        return true;
     }
 
     updateVisibleChunks() {
@@ -80,5 +84,8 @@ export class ChunkManager {
 
     getLoadedChunkCount() {
         return this.loadedChunks.size;
+    }
+    getLoadedChunks() {
+        return Array.from(this.loadedChunks.values());
     }
 }

@@ -11,7 +11,7 @@ import {
 import { ChunkManager } from "./world/chunk/chunkManager";
 import { loadPlayerState, savePlayerState } from "./player/playerState";
 import { InspectorMode } from "./engine/debug/inspectorMode";
-
+import { WorldMap } from "./gameplay/map/map";
 
 /* ========================= */
 /*        SCENE SETUP        */
@@ -95,27 +95,39 @@ const inspector = new InspectorMode(
     controller,
     chunkManager
 );
-
+const worldMap = new WorldMap(
+    () => chunkManager.getLoadedChunks(),
+    () => camera.position
+);
 /* ========================= */
 /*        ANIMATION LOOP     */
 /* ========================= */
 function animate() {
+
     requestAnimationFrame(animate);
+
     const delta = clock.getDelta();
+
     debug.begin();
 
     controller.update(delta);
     inspector.update(delta);
 
+    let chunkChanged = false;
+
     if (!inspector.enabled) {
-        chunkManager.update(camera.position);
+        chunkChanged = chunkManager.update(camera.position);
     }
-    savePlayerState(camera);
 
     renderer.render(scene, camera);
 
-    debug.update();
+    if (worldMap.visible && chunkChanged) {
+        worldMap.render();
+    }
 
+    savePlayerState(camera);
+
+    debug.update();
     debug.end();
 }
 
