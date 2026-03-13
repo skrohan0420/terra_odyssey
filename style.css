@@ -1,0 +1,17 @@
+  body {
+      margin: 0;
+      overflow: hidden;
+      background: #87ceeb;
+  }
+
+  /* World Map Overlay */
+  #worldMap {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: none;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 1000;
+  }
