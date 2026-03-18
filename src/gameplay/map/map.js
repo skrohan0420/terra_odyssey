@@ -12,9 +12,8 @@ export class WorldMap {
 
         this.visible = false;
 
-        this.scale = 10;
-
-        this.lastPlayerChunk = { x: null, z: null };
+        this.scale = 2; // smaller = fits more area
+        this.renderRadius = 100; //  in BLOCKS
 
         this.resize();
 
@@ -33,9 +32,7 @@ export class WorldMap {
     }
 
     toggle() {
-
         this.visible = !this.visible;
-
         this.canvas.style.display = this.visible ? "block" : "none";
 
         if (this.visible) {
@@ -46,7 +43,6 @@ export class WorldMap {
     render() {
 
         const ctx = this.ctx;
-
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         const chunks = this.getChunks() || [];
@@ -54,68 +50,54 @@ export class WorldMap {
 
         if (!player) return;
 
-        const playerChunkX = Math.floor(player.x / CHUNK_SIZE);
-        const playerChunkZ = Math.floor(player.z / CHUNK_SIZE);
-
         const centerX = this.canvas.width / 2;
         const centerZ = this.canvas.height / 2;
 
         for (const mesh of chunks) {
 
             const data = mesh.userData;
-            if (!data) continue;
+            if (!data || !data.columnHeights) continue;
 
-            const cx = data.chunkX;
-            const cz = data.chunkZ;
+            for (const key in data.columnHeights) {
 
-            const screenX =
-                (cx - playerChunkX) * this.scale + centerX;
+                const height = data.columnHeights[key];
 
-            const screenZ =
-                (cz - playerChunkZ) * this.scale + centerZ;
+                const [worldX, worldZ] = key.split(",").map(Number);
 
-            const avgHeight = this.getAverageHeight(data.columnHeights);
+                //  distance from player (BLOCK distance)
+                const dx = worldX - player.x;
+                const dz = worldZ - player.z;
 
-            ctx.fillStyle = this.getHeightColor(avgHeight);
+                if (Math.abs(dx) > this.renderRadius ||
+                    Math.abs(dz) > this.renderRadius) continue;
 
-            ctx.fillRect(
-                screenX,
-                screenZ,
-                this.scale,
-                this.scale
-            );
+                const screenX =
+                    centerX + dx * this.scale;
 
-            ctx.strokeStyle = "#1b3a2f";
-            ctx.strokeRect(
-                screenX,
-                screenZ,
-                this.scale,
-                this.scale
-            );
+                const screenZ =
+                    centerZ + dz * this.scale;
+
+                ctx.fillStyle = this.getHeightColor(height);
+
+                ctx.fillRect(
+                    screenX,
+                    screenZ,
+                    this.scale,
+                    this.scale
+                );
+            }
         }
 
         this.drawPlayer();
     }
 
-    getAverageHeight(heights) {
-
-        let total = 0;
-        let count = 0;
-
-        for (const key in heights) {
-            total += heights[key];
-            count++;
-        }
-
-        return total / count;
-    }
-
     getHeightColor(height) {
 
-        if (height < 8) return "#1f5f2e";     // low land
-        if (height < 12) return "#3aa657";    // grass
-        if (height < 18) return "#8b6f47";    // dirt
-        return "#d8d8d8";                     // mountain
+        if (height < 6) return "#1b4d2b";
+        if (height < 10) return "#2f7d3f";
+        if (height < 14) return "#7a6a4f";
+        if (height < 20) return "#a8a8a8";
+        return "#ffffff";
     }
 
     drawPlayer() {
@@ -128,7 +110,7 @@ export class WorldMap {
         ctx.fillStyle = "red";
 
         ctx.beginPath();
-        ctx.arc(centerX, centerZ, 6, 0, Math.PI * 2);
+        ctx.arc(centerX, centerZ, 5, 0, Math.PI * 2);
         ctx.fill();
     }
 }
