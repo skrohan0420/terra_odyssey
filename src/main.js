@@ -9,9 +9,10 @@ import {
     CAMERA_NEAR_PALE
 } from "./config/config";
 import { ChunkManager } from "./world/chunk/chunkManager";
-import { loadPlayerState, savePlayerState } from "./player/playerState";
+import { loadPlayerState } from "./player/playerState";
 import { InspectorMode } from "./engine/debug/inspectorMode";
 import { WorldMap } from "./gameplay/map/map";
+import { startGameLoop } from "./engine/loop/gameLoop";
 
 /* ========================= */
 /*        SCENE SETUP        */
@@ -19,7 +20,6 @@ import { WorldMap } from "./gameplay/map/map";
 
 const scene = createScene();
 const renderer = createRenderer();
-const clock = new THREE.Clock();
 
 /* ========================= */
 /*          CAMERA           */
@@ -31,7 +31,6 @@ const camera = new THREE.PerspectiveCamera(
     CAMERA_NEAR_PALE,
     CAMERA_FAR_PALE
 );
-
 
 const state = loadPlayerState();
 
@@ -57,7 +56,6 @@ if (state) {
 /* ========================= */
 
 const renderDistance = 16;
-
 const chunkManager = new ChunkManager(scene, renderDistance);
 
 /* ========================= */
@@ -67,6 +65,16 @@ const chunkManager = new ChunkManager(scene, renderDistance);
 const controller = new PlayerController(
     camera,
     renderer.domElement
+);
+
+/* ========================= */
+/*       INSPECTOR           */
+/* ========================= */
+
+const inspector = new InspectorMode(
+    camera,
+    controller,
+    chunkManager
 );
 
 /* ========================= */
@@ -81,54 +89,47 @@ const debug = new DebugOverlay(
 );
 
 /* ========================= */
-/*     WINDOW RESIZE         */
+/*         WORLD MAP         */
 /* ========================= */
 
-window.addEventListener("resize", () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-const inspector = new InspectorMode(
-    camera,
-    controller,
-    chunkManager
-);
 const worldMap = new WorldMap(
     () => chunkManager.getLoadedChunks(),
     () => camera.position
 );
+
 /* ========================= */
-/*        ANIMATION LOOP     */
+/*     WINDOW RESIZE         */
 /* ========================= */
-function animate() {
 
-    requestAnimationFrame(animate);
+function setupResize(camera, renderer) {
+    function handleResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
 
-    const delta = clock.getDelta();
-
-    debug.begin();
-
-    controller.update(delta);
-    inspector.update(delta);
-
-    let chunkChanged = false;
-
-    if (!inspector.enabled) {
-        chunkChanged = chunkManager.update(camera.position);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
     }
 
-    renderer.render(scene, camera);
-
-    if (worldMap.visible && chunkChanged) {
-        worldMap.render();
-    }
-
-    savePlayerState(camera);
-
-    debug.update();
-    debug.end();
+    window.addEventListener("resize", handleResize);
+    handleResize(); // run once on start
 }
 
-animate();
+setupResize(camera, renderer);
+
+/* ========================= */
+/*        GAME LOOP          */
+/* ========================= */
+
+const game = startGameLoop({
+    scene,
+    camera,
+    renderer,
+    controller,
+    inspector,
+    chunkManager,
+    worldMap,
+    debug
+});
+
+game.start();
+

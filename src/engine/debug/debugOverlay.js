@@ -8,7 +8,9 @@ export class DebugOverlay {
         this.getChunkCount = getChunkCount;
         this.getInspectorState = getInspectorState;
 
-        this.enabled = true;
+        this.STORAGE_KEY = "debug_overlay_enabled";
+
+        this.enabled = this.loadState();
 
         /* ========================= */
         /*        STATS PANEL        */
@@ -55,6 +57,27 @@ export class DebugOverlay {
     }
 
     /* ========================= */
+    /*     LOCAL STORAGE         */
+    /* ========================= */
+
+    loadState() {
+        try {
+            const saved = localStorage.getItem(this.STORAGE_KEY);
+            return saved === null ? true : saved === "true";
+        } catch {
+            return true; // fallback if storage blocked
+        }
+    }
+
+    saveState() {
+        try {
+            localStorage.setItem(this.STORAGE_KEY, this.enabled);
+        } catch {
+            // ignore storage errors
+        }
+    }
+
+    /* ========================= */
     /*        TOGGLE (F2)        */
     /* ========================= */
 
@@ -63,6 +86,7 @@ export class DebugOverlay {
             if (e.code === "F2") {
                 this.enabled = !this.enabled;
                 this.setVisibility(this.enabled);
+                this.saveState(); // ✅ persist
             }
         });
     }
@@ -81,7 +105,7 @@ export class DebugOverlay {
         const now = performance.now();
         const delta = now - this.lastTime;
 
-        if (delta >= 250) { // smoother FPS calculation
+        if (delta >= 250) {
             this.fps = Math.round((this.frames * 1000) / delta);
             this.frames = 0;
             this.lastTime = now;
@@ -112,25 +136,25 @@ export class DebugOverlay {
         const chunkX = Math.floor(this.camera.position.x / CHUNK_SIZE);
         const chunkZ = Math.floor(this.camera.position.z / CHUNK_SIZE);
 
-
         this.infoEl.innerHTML = `
-                <div>FPS: <span style="color:${fpsColor}">${this.fps}</span></div>
-                <div>Draw Calls: <span style="color:white">${drawCalls}</span></div>
-                <div>Triangles: <span style="color:white">${triangles.toLocaleString()}</span></div>
-                <div>Geometries: <span style="color:white">${geometries}</span></div>
-                <div>Textures: <span style="color:white">${textures}</span></div>
-                
-                <div>Camera: <span style="color:white">
-                ${this.camera.position.x.toFixed(1)},
-                ${this.camera.position.y.toFixed(1)},
-                ${this.camera.position.z.toFixed(1)}
-                </span></div>
-                <div>Chunk: <span style="color:white">(${chunkX},${chunkZ})</span></div>
+            <div>FPS: <span style="color:${fpsColor}">${this.fps}</span></div>
+            <div>Draw Calls: <span style="color:white">${drawCalls}</span></div>
+            <div>Triangles: <span style="color:white">${triangles.toLocaleString()}</span></div>
+            <div>Geometries: <span style="color:white">${geometries}</span></div>
+            <div>Textures: <span style="color:white">${textures}</span></div>
+            
+            <div>Camera: <span style="color:white">
+            ${this.camera.position.x.toFixed(1)},
+            ${this.camera.position.y.toFixed(1)},
+            ${this.camera.position.z.toFixed(1)}
+            </span></div>
 
-                <div>Chunks: <span style="color:white">${this.getChunkCount()}</span></div>
+            <div>Chunk: <span style="color:white">(${chunkX},${chunkZ})</span></div>
 
-                <div>Inspect Mode: <span style="color:${inspectorColor}">${inspectorText}</span></div>
-            `;
+            <div>Chunks: <span style="color:white">${this.getChunkCount()}</span></div>
+
+            <div>Inspect Mode: <span style="color:${inspectorColor}">${inspectorText}</span></div>
+        `;
     }
 
     /* ========================= */
@@ -154,3 +178,4 @@ export class DebugOverlay {
         this.updateInfo();
     }
 }
+
