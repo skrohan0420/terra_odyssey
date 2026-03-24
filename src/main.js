@@ -6,7 +6,9 @@ import { DebugOverlay } from "./engine/debug/debugOverlay";
 import {
     CAMERA_FOV,
     CAMERA_FAR_PALE,
-    CAMERA_NEAR_PALE
+    CAMERA_NEAR_PALE,
+    MAX_RENDER_PIXEL_RATIO,
+    WORLD_RENDER_DISTANCE
 } from "./config/config";
 import { ChunkManager } from "./world/chunk/chunkManager";
 import { loadPlayerState } from "./player/playerState";
@@ -55,7 +57,7 @@ if (state) {
 /*       WORLD GEN           */
 /* ========================= */
 
-const renderDistance = 16;
+const renderDistance = WORLD_RENDER_DISTANCE;
 const chunkManager = new ChunkManager(scene, renderDistance);
 
 /* ========================= */
@@ -107,7 +109,7 @@ function setupResize(camera, renderer) {
         camera.updateProjectionMatrix();
 
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_RENDER_PIXEL_RATIO));
     }
 
     window.addEventListener("resize", handleResize);
