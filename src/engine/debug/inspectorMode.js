@@ -11,6 +11,8 @@ export class InspectorMode {
 
         this.speed = 80;
         this.direction = new THREE.Vector3();
+        this.forward = new THREE.Vector3();
+        this.right = new THREE.Vector3();
         this.keys = {};
 
         window.addEventListener("keydown", (e) => this.onKeyDown(e));
@@ -18,7 +20,7 @@ export class InspectorMode {
     }
 
     onKeyDown(e) {
-        this.keys[e.key.toLowerCase()] = true;
+        this.keys[e.code] = true;
 
         if (e.altKey && e.key.toLowerCase() === "i") {
             this.toggle();
@@ -26,7 +28,7 @@ export class InspectorMode {
     }
 
     onKeyUp(e) {
-        this.keys[e.key.toLowerCase()] = false;
+        this.keys[e.code] = false;
     }
 
     toggle() {
