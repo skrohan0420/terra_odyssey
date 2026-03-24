@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { CHUNK_SIZE, BLOCK_SIZE } from "../../config/config";
+import { BLOCK_SIZE, CHUNK_SIZE } from "../../config/worldConfig";
 import { getHeight } from "../generation/noise";
 import { getBlockEntry, RENDERABLE_BLOCKS } from "../block/blockRegistry";
 import { BLOCK_IDS } from "../block/blockTypes";

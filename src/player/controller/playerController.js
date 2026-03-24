@@ -8,7 +8,7 @@ import {
   PLAYER_STEP_SPEED,
   PLAYER_SPRINT_MULTIPLIER,
   PLAYER_WALK_SPEED
-} from "../../config/config";
+} from "../../config/playerConfig";
 import { getHeight } from "../../world/generation/noise";
 
 export class PlayerController {

@@ -1,45 +1,26 @@
-import { savePlayerState } from "../../player/playerState";
-
 export function startGameLoop({
     scene,
     camera,
     renderer,
-    controller,
-    inspector,
-    chunkManager,
     worldMap,
-    debug
+    debug,
+    systemManager,
+    chunkStreamingSystem,
+    saveSystem
 }) {
     let running = false;
     let isStarted = false;
 
     let lastTime = performance.now();
-    let saveTimer = 0;
-    let chunkChanged = false;
-
-    const updatables = [controller, inspector];
 
     function update(delta) {
-        // Update all systems
-        updatables.forEach(obj => obj.update?.(delta));
-
-        // Chunk system
-        if (!inspector.enabled) {
-            chunkChanged = chunkManager.update(camera.position);
-        }
-
-        // Save player state every 2 seconds
-        saveTimer += delta;
-        if (saveTimer > 2) {
-            savePlayerState(camera);
-            saveTimer = 0;
-        }
+        systemManager.update(delta);
     }
 
     function render() {
         renderer.render(scene, camera);
 
-        if (worldMap.visible && chunkChanged) {
+        if (worldMap.visible && chunkStreamingSystem.consumeChunkChange()) {
             worldMap.render();
         }
     }
@@ -74,6 +55,7 @@ export function startGameLoop({
         },
         stop: () => {
             running = false;
+            saveSystem?.flush?.();
         }
     };
 }

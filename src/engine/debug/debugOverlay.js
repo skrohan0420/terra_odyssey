@@ -1,5 +1,5 @@
 import Stats from "stats.js";
-import { CHUNK_SIZE } from "../../config/config";
+import { CHUNK_SIZE } from "../../config/worldConfig";
 
 export class DebugOverlay {
     constructor(renderer, camera, getChunkCount, getInspectorState) {

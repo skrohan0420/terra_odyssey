@@ -1,4 +1,4 @@
-import { CHUNK_SIZE } from "../../config/config";
+import { CHUNK_SIZE } from "../../config/worldConfig";
 
 export class WorldMap {
 
