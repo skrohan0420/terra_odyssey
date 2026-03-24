@@ -1,5 +1,5 @@
 import { generateChunk } from "./chunk";
-import { CHUNK_SIZE } from "../../config/config";
+import { CHUNK_SIZE } from "../../config/worldConfig";
 
 export class ChunkManager {
 
