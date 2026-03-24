@@ -1,5 +1,15 @@
 import * as THREE from "three";
-import { CONTROLLER_SPEED, CONTROLLER_SENSiTIVITY } from "../../config/config";
+import {
+  CONTROLLER_SENSiTIVITY,
+  PLAYER_EYE_HEIGHT,
+  PLAYER_GRAVITY,
+  PLAYER_JUMP_FORCE,
+  PLAYER_STEP_HEIGHT,
+  PLAYER_STEP_SPEED,
+  PLAYER_SPRINT_MULTIPLIER,
+  PLAYER_WALK_SPEED
+} from "../../config/config";
+import { getHeight } from "../../world/generation/noise";
 
 export class PlayerController {
 
@@ -7,24 +17,35 @@ export class PlayerController {
 
     this.camera = camera;
     this.domElement = domElement;
+    this.enabled = true;
 
     // Settings
-    this.speed = CONTROLLER_SPEED;
+    this.walkSpeed = PLAYER_WALK_SPEED;
+    this.sprintMultiplier = PLAYER_SPRINT_MULTIPLIER;
+    this.jumpForce = PLAYER_JUMP_FORCE;
+    this.gravity = PLAYER_GRAVITY;
+    this.eyeHeight = PLAYER_EYE_HEIGHT;
+    this.stepHeight = PLAYER_STEP_HEIGHT;
+    this.stepSpeed = PLAYER_STEP_SPEED;
     this.sensitivity = CONTROLLER_SENSiTIVITY;
 
     // Rotation
-    this.yaw = 0;
-    this.pitch = 0;
+    this.euler = new THREE.Euler(0, 0, 0, "YXZ");
+    this.euler.setFromQuaternion(this.camera.quaternion);
+    this.yaw = this.euler.y;
+    this.pitch = this.euler.x;
 
     // Input
     this.keys = {};
+    this.jumpQueued = false;
 
-    // Reusable vectors (prevents garbage collection)
+    // Reusable vectors
     this.direction = new THREE.Vector3();
     this.forward = new THREE.Vector3();
     this.right = new THREE.Vector3();
 
-    this.euler = new THREE.Euler(0, 0, 0, "YXZ");
+    this.verticalVelocity = 0;
+    this.isGrounded = false;
 
     this._initEvents();
   }
@@ -34,6 +55,11 @@ export class PlayerController {
     // Keyboard input
     document.addEventListener("keydown", (e) => {
       this.keys[e.code] = true;
+
+      if (e.code === "Space" && !e.repeat) {
+        this.jumpQueued = true;
+        e.preventDefault();
+      }
     });
 
     document.addEventListener("keyup", (e) => {
@@ -65,6 +91,11 @@ export class PlayerController {
   }
 
   update(delta) {
+    if (!this.enabled) return;
+
+    const wasGrounded = this.isGrounded;
+    const startX = this.camera.position.x;
+    const startZ = this.camera.position.z;
 
     this.direction.set(0, 0, 0);
 
@@ -74,7 +105,11 @@ export class PlayerController {
     if (this.keys["KeyA"]) this.direction.x -= 1;
     if (this.keys["KeyD"]) this.direction.x += 1;
 
-    const velocity = this.speed * delta;
+    const isSprinting = this.keys["ShiftLeft"] || this.keys["ShiftRight"];
+    const moveSpeed = this.walkSpeed * (isSprinting ? this.sprintMultiplier : 1);
+    const movementStep = moveSpeed * delta;
+
+    let movedHorizontally = false;
 
     // Horizontal movement
     if (this.direction.lengthSq() > 0) {
@@ -93,24 +128,93 @@ export class PlayerController {
 
       this.camera.position.addScaledVector(
         this.forward,
-        this.direction.z * velocity
+        this.direction.z * movementStep
       );
 
       this.camera.position.addScaledVector(
         this.right,
-        this.direction.x * velocity
+        this.direction.x * movementStep
       );
+
+      movedHorizontally = true;
     }
 
-    // Vertical movement
-    if (this.keys["KeyQ"]) {
-      this.camera.position.y += velocity;
+    let jumpStarted = false;
+
+    if (this.jumpQueued && wasGrounded) {
+      this.verticalVelocity = this.jumpForce;
+      this.isGrounded = false;
+      jumpStarted = true;
     }
 
-    if (this.keys["KeyE"]) {
-      this.camera.position.y -= velocity;
+    this.jumpQueued = false;
+
+    let groundHeight = this.getGroundHeight(
+      this.camera.position.x,
+      this.camera.position.z
+    );
+
+    const heightDelta = groundHeight - this.camera.position.y;
+
+    if (!jumpStarted && wasGrounded) {
+      if (heightDelta > this.stepHeight && movedHorizontally) {
+        this.camera.position.x = startX;
+        this.camera.position.z = startZ;
+        groundHeight = this.getGroundHeight(startX, startZ);
+        this.camera.position.y = this.moveTowards(
+          this.camera.position.y,
+          groundHeight,
+          this.stepSpeed * delta
+        );
+        this.verticalVelocity = 0;
+        this.isGrounded = true;
+        return;
+      }
+
+      if (heightDelta >= -this.stepHeight && heightDelta <= this.stepHeight) {
+        this.camera.position.y = this.moveTowards(
+          this.camera.position.y,
+          groundHeight,
+          this.stepSpeed * delta
+        );
+        this.verticalVelocity = 0;
+        this.isGrounded = true;
+        return;
+      }
     }
 
+    this.isGrounded = false;
+    this.verticalVelocity -= this.gravity * delta;
+    this.camera.position.y += this.verticalVelocity * delta;
+
+    groundHeight = this.getGroundHeight(
+      this.camera.position.x,
+      this.camera.position.z
+    );
+
+    if (this.verticalVelocity <= 0 && this.camera.position.y <= groundHeight) {
+      this.camera.position.y = groundHeight;
+      this.verticalVelocity = 0;
+      this.isGrounded = true;
+    }
   }
 
+  getGroundHeight(x = this.camera.position.x, z = this.camera.position.z) {
+    const sampleX = this.getBlockCoord(x);
+    const sampleZ = this.getBlockCoord(z);
+
+    return getHeight(sampleX, sampleZ) + this.eyeHeight - 0.5;
+  }
+
+  getBlockCoord(value) {
+    return Math.floor(value + 0.5);
+  }
+
+  moveTowards(current, target, maxDelta) {
+    if (Math.abs(target - current) <= maxDelta) {
+      return target;
+    }
+
+    return current + Math.sign(target - current) * maxDelta;
+  }
 }
