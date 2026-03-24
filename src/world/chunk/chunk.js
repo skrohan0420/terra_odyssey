@@ -1,35 +1,61 @@
 import * as THREE from "three";
 import { CHUNK_SIZE, BLOCK_SIZE } from "../../config/config";
 import { getHeight } from "../generation/noise";
+import { getBlockEntry, RENDERABLE_BLOCKS } from "../block/blockRegistry";
+import { BLOCK_IDS } from "../block/blockTypes";
 
 const geometry = new THREE.BoxGeometry(BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
 
-const material = new THREE.MeshLambertMaterial();
-
 const dummy = new THREE.Object3D();
-const color = new THREE.Color();
+
+function createBlockMesh(materials, capacity) {
+  const mesh = new THREE.InstancedMesh(geometry, materials, capacity);
+  return mesh;
+}
+
+function createChunkMeshes(chunk, columnCount) {
+  const meshEntries = Object.fromEntries(
+    RENDERABLE_BLOCKS.map((block) => {
+      const mesh = createBlockMesh(
+        block.materials,
+        columnCount * block.maxInstancesPerColumn
+      );
+
+      chunk.add(mesh);
+
+      return [block.id, { mesh, nextIndex: 0 }];
+    })
+  );
+
+  return meshEntries;
+}
+
+function addBlockInstance(meshEntries, blockId) {
+  const entry = meshEntries[blockId];
+
+  entry.mesh.setMatrixAt(entry.nextIndex, dummy.matrix);
+  entry.nextIndex++;
+}
+
+function finalizeChunkMeshes(meshEntries) {
+  Object.values(meshEntries).forEach((entry) => {
+    entry.mesh.count = entry.nextIndex;
+    entry.mesh.instanceMatrix.needsUpdate = true;
+  });
+}
 
 export function generateChunk(scene, chunkX, chunkZ) {
-
   const offsetX = chunkX * CHUNK_SIZE;
   const offsetZ = chunkZ * CHUNK_SIZE;
+  const columnCount = CHUNK_SIZE * CHUNK_SIZE;
 
-  const maxInstances = CHUNK_SIZE * CHUNK_SIZE * 6;
-
-  const mesh = new THREE.InstancedMesh(geometry, material, maxInstances);
-
-  mesh.instanceColor = new THREE.InstancedBufferAttribute(
-    new Float32Array(maxInstances * 3),
-    3
-  );
+  const chunk = new THREE.Group();
+  const meshEntries = createChunkMeshes(chunk, columnCount);
 
   const columnHeights = {};
 
-  let index = 0;
-
   for (let x = 0; x < CHUNK_SIZE; x++) {
     for (let z = 0; z < CHUNK_SIZE; z++) {
-
       const worldX = x + offsetX;
       const worldZ = z + offsetZ;
 
@@ -39,51 +65,42 @@ export function generateChunk(scene, chunkX, chunkZ) {
       const minY = Math.max(0, height - 3);
 
       for (let y = minY; y < height; y++) {
-
         dummy.position.set(worldX, y, worldZ);
         dummy.updateMatrix();
 
-        mesh.setMatrixAt(index, dummy.matrix);
-
-        if (y === height - 1) color.set(0x2ecc71);
-        else color.set(0x8b4513);
-
-        mesh.setColorAt(index, color);
-
-        index++;
+        if (y === height - 1) {
+          addBlockInstance(meshEntries, BLOCK_IDS.GRASS);
+        } else {
+          addBlockInstance(meshEntries, BLOCK_IDS.DIRT);
+        }
       }
     }
   }
 
-  mesh.count = index;
+  finalizeChunkMeshes(meshEntries);
 
-  mesh.instanceMatrix.needsUpdate = true;
-  mesh.instanceColor.needsUpdate = true;
-
-  mesh.userData = {
+  chunk.userData = {
     chunkX,
     chunkZ,
     columnHeights,
     revealBlock(worldX, worldZ, y) {
-
       if (y < 0) return;
 
       dummy.position.set(worldX, y, worldZ);
       dummy.updateMatrix();
 
-      mesh.setMatrixAt(mesh.count, dummy.matrix);
+      const stoneEntry = getBlockEntry(BLOCK_IDS.STONE);
+      const meshEntry = meshEntries[stoneEntry.id];
 
-      color.set(0x777777);
-      mesh.setColorAt(mesh.count, color);
+      meshEntry.mesh.setMatrixAt(meshEntry.nextIndex, dummy.matrix);
+      meshEntry.nextIndex++;
+      meshEntry.mesh.count = meshEntry.nextIndex;
 
-      mesh.count++;
-
-      mesh.instanceMatrix.needsUpdate = true;
-      mesh.instanceColor.needsUpdate = true;
+      meshEntry.mesh.instanceMatrix.needsUpdate = true;
     }
   };
 
-  scene.add(mesh);
+  scene.add(chunk);
 
-  return mesh;
+  return chunk;
 }

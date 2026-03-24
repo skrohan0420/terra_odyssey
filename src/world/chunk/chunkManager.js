@@ -70,17 +70,17 @@ export class ChunkManager {
 
         for (const [key, mesh] of this.loadedChunks.entries()) {
 
-            if (!newChunkSet.has(key)) {
+                if (!newChunkSet.has(key)) {
 
-                this.scene.remove(mesh);
+                    this.scene.remove(mesh);
+                    mesh.traverse?.((object) => {
+                        object.dispose?.();
+                    });
 
-                mesh.geometry.dispose();
-                mesh.material.dispose();
-
-                this.loadedChunks.delete(key);
+                    this.loadedChunks.delete(key);
+                }
             }
         }
-    }
 
     getLoadedChunkCount() {
         return this.loadedChunks.size;
