@@ -28,7 +28,8 @@ export function bootstrapGame() {
   const inspector = new InspectorMode(camera, controller, chunkManager);
   const worldMap = new WorldMap(
     () => chunkManager.getLoadedChunks(),
-    () => camera.position
+    () => camera.position,
+    () => camera.quaternion
   );
   const debug = new DebugOverlay(
     renderer,

@@ -20,8 +20,8 @@ export function startGameLoop({
     function render() {
         renderer.render(scene, camera);
 
-        if (worldMap.visible && chunkStreamingSystem.consumeChunkChange()) {
-            worldMap.render();
+        if (worldMap.visible) {
+            worldMap.update(chunkStreamingSystem.consumeChunkChange());
         }
     }
 
