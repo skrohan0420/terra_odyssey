@@ -52,15 +52,20 @@ export function generateChunk(scene, chunkX, chunkZ) {
   const chunk = new THREE.Group();
   const meshEntries = createChunkMeshes(chunk, columnCount);
 
-  const columnHeights = {};
+  const surfaceHeights = new Int16Array(columnCount);
+  let minSurfaceHeight = Number.POSITIVE_INFINITY;
+  let maxSurfaceHeight = Number.NEGATIVE_INFINITY;
 
   for (let x = 0; x < CHUNK_SIZE; x++) {
     for (let z = 0; z < CHUNK_SIZE; z++) {
       const worldX = x + offsetX;
       const worldZ = z + offsetZ;
+      const surfaceIndex = z * CHUNK_SIZE + x;
 
       const height = getHeight(worldX, worldZ);
-      columnHeights[`${worldX},${worldZ}`] = height;
+      surfaceHeights[surfaceIndex] = height;
+      minSurfaceHeight = Math.min(minSurfaceHeight, height);
+      maxSurfaceHeight = Math.max(maxSurfaceHeight, height);
 
       const minY = Math.max(0, height - 3);
 
@@ -82,7 +87,11 @@ export function generateChunk(scene, chunkX, chunkZ) {
   chunk.userData = {
     chunkX,
     chunkZ,
-    columnHeights,
+    surfaceData: {
+      heights: surfaceHeights,
+      minHeight: minSurfaceHeight,
+      maxHeight: maxSurfaceHeight
+    },
     revealBlock(worldX, worldZ, y) {
       if (y < 0) return;
 

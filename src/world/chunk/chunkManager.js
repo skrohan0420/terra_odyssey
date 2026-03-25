@@ -9,6 +9,7 @@ export class ChunkManager {
         this.renderDistance = renderDistance;
 
         this.loadedChunks = new Map();
+        this.loadedChunkList = [];
         this.currentPlayerChunk = { x: null, z: null };
     }
 
@@ -80,12 +81,14 @@ export class ChunkManager {
                     this.loadedChunks.delete(key);
                 }
             }
+
+        this.loadedChunkList = Array.from(this.loadedChunks.values());
         }
 
     getLoadedChunkCount() {
         return this.loadedChunks.size;
     }
     getLoadedChunks() {
-        return Array.from(this.loadedChunks.values());
+        return this.loadedChunkList;
     }
 }
