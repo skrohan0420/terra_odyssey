@@ -40,26 +40,9 @@ export class WorldMap {
         this.root.innerHTML = `
             <div class="world-map__backdrop"></div>
             <section class="world-map__panel" aria-label="World map">
-                <div class="world-map__header">
-                    <div>
-                        <p class="world-map__eyebrow">Terrain Scan</p>
-                        <h2 class="world-map__title">Surface Topology</h2>
-                    </div>
-                    <div class="world-map__shortcut">M to close</div>
-                </div>
                 <div class="world-map__frame">
                     <canvas class="world-map__canvas"></canvas>
                 </div>
-                <div class="world-map__meta">
-                    <div class="world-map__status"></div>
-                    <div class="world-map__zoom"></div>
-                </div>
-                <div class="world-map__legend">
-                    <span class="world-map__legend-item world-map__legend-item--low">Lowlands</span>
-                    <span class="world-map__legend-item world-map__legend-item--mid">Uplands</span>
-                    <span class="world-map__legend-item world-map__legend-item--high">Peaks</span>
-                </div>
-                <p class="world-map__hint">Scroll or use +/- to zoom. Contour bands and relief shading show the terrain shape.</p>
             </section>
         `;
 
@@ -67,8 +50,6 @@ export class WorldMap {
         this.canvas = this.root.querySelector(".world-map__canvas");
         this.ctx = this.canvas.getContext("2d");
         this.ctx.imageSmoothingEnabled = false;
-        this.statusEl = this.root.querySelector(".world-map__status");
-        this.zoomEl = this.root.querySelector(".world-map__zoom");
     }
 
     resize() {
@@ -243,7 +224,6 @@ export class WorldMap {
 
         this.drawCrosshair();
         this.drawPlayer(centerX, centerZ);
-        this.updateMeta(player, pixelsPerBlock);
     }
 
     getChunkKey(chunkX, chunkZ) {
@@ -299,14 +279,5 @@ export class WorldMap {
         return Math.atan2(this.forward.x, -this.forward.z);
     }
 
-    updateMeta(player, pixelsPerBlock) {
-        const chunkX = Math.floor(player.x / CHUNK_SIZE);
-        const chunkZ = Math.floor(player.z / CHUNK_SIZE);
-        const coverage = Math.floor((this.canvas.width / pixelsPerBlock) / 2);
-
-        this.statusEl.textContent =
-            `X ${Math.round(player.x)}  Z ${Math.round(player.z)}  |  Chunk ${chunkX}, ${chunkZ}`;
-        this.zoomEl.textContent =
-            `Zoom ${pixelsPerBlock} px / block  |  View radius ${coverage} blocks`;
-    }
+   
 }
