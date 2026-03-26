@@ -1,6 +1,10 @@
 import { createRenderer } from "../engine/renderer/renderer";
 import { createScene } from "../engine/renderer/scene";
 import {
+  createStaticSky,
+  getStaticSunDirection
+} from "../engine/renderer/sky";
+import {
   bindCameraResize,
   createCamera
 } from "../engine/renderer/camera";
@@ -17,11 +21,14 @@ import { WORLD_RENDER_DISTANCE } from "../config/worldConfig";
 import { ChunkManager } from "../world/chunk/chunkManager";
 
 export function bootstrapGame() {
-  const scene = createScene();
-  const renderer = createRenderer();
   const camera = createCamera(loadPlayerState());
+  const sunDirection = getStaticSunDirection(camera);
+  const { scene, sunlight } = createScene(sunDirection);
+  const staticSky = createStaticSky(camera, sunlight, sunDirection);
+  const renderer = createRenderer();
 
   bindCameraResize(camera, renderer);
+  scene.add(staticSky.object);
 
   const chunkManager = new ChunkManager(scene, WORLD_RENDER_DISTANCE);
   const controller = new PlayerController(camera, renderer.domElement);
@@ -39,6 +46,7 @@ export function bootstrapGame() {
   );
 
   const systemManager = new SystemManager();
+  systemManager.register(staticSky);
   systemManager.register(controller);
   systemManager.register(inspector);
 
@@ -72,6 +80,7 @@ export function bootstrapGame() {
     chunkManager,
     worldMap,
     debug,
+    staticSky,
     systemManager,
     chunkStreamingSystem,
     saveSystem
