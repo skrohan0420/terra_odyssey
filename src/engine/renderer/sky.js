@@ -1,4 +1,12 @@
-import * as THREE from "three";
+import {
+  BoxGeometry,
+  Group,
+  Mesh,
+  MeshLambertMaterial,
+  Sprite,
+  SpriteMaterial,
+  Vector3
+} from "three";
 import {
   SKY_CLOUD_CELL_SIZE,
   SKY_CLOUD_GRID_RADIUS,
@@ -38,15 +46,15 @@ function freezeObjectTransforms(object) {
 }
 
 function createSunVisual() {
-  const sunGroup = new THREE.Group();
-  const sunMaterial = new THREE.SpriteMaterial({
+  const sunGroup = new Group();
+  const sunMaterial = new SpriteMaterial({
     color: 0xfff0b3,
     fog: false,
     depthWrite: false
   });
   sunMaterial.toneMapped = false;
 
-  const haloMaterial = new THREE.SpriteMaterial({
+  const haloMaterial = new SpriteMaterial({
     color: 0xfff7d1,
     transparent: true,
     opacity: 0.22,
@@ -55,8 +63,8 @@ function createSunVisual() {
   });
   haloMaterial.toneMapped = false;
 
-  const sunCore = new THREE.Sprite(sunMaterial);
-  const halo = new THREE.Sprite(haloMaterial);
+  const sunCore = new Sprite(sunMaterial);
+  const halo = new Sprite(haloMaterial);
 
   sunCore.scale.set(SKY_SUN_SIZE, SKY_SUN_SIZE, 1);
   halo.scale.set(SKY_SUN_SIZE * 1.8, SKY_SUN_SIZE * 1.8, 1);
@@ -89,7 +97,7 @@ function createCloudCluster(cellX, cellZ, geometry, material) {
     getCellRandom(cellX, cellZ, 1) * CLOUD_SHAPES.length
   );
   const shape = CLOUD_SHAPES[shapeIndex];
-  const cluster = new THREE.Group();
+  const cluster = new Group();
   const jitterX = (getCellRandom(cellX, cellZ, 3) - 0.5) * SKY_CLOUD_CELL_SIZE * 0.55;
   const jitterZ = (getCellRandom(cellX, cellZ, 4) - 0.5) * SKY_CLOUD_CELL_SIZE * 0.55;
 
@@ -101,7 +109,7 @@ function createCloudCluster(cellX, cellZ, geometry, material) {
   cluster.scale.setScalar(getCloudScale(cellX, cellZ));
 
   for (const slab of shape) {
-    const mesh = new THREE.Mesh(geometry, material);
+    const mesh = new Mesh(geometry, material);
     mesh.position.set(slab.x, slab.y, slab.z);
     mesh.scale.set(slab.width, slab.height, slab.depth);
     cluster.add(mesh);
@@ -113,7 +121,7 @@ function createCloudCluster(cellX, cellZ, geometry, material) {
 }
 
 export function getStaticSunDirection(camera) {
-  const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+  const forward = new Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
   forward.y = 0;
 
   if (forward.lengthSq() === 0) {
@@ -122,7 +130,7 @@ export function getStaticSunDirection(camera) {
 
   forward.normalize();
 
-  return new THREE.Vector3(forward.x * 0.72, 0.68, forward.z * 0.72).normalize();
+  return new Vector3(forward.x * 0.72, 0.68, forward.z * 0.72).normalize();
 }
 
 class StaticSky {
@@ -130,13 +138,13 @@ class StaticSky {
     this.camera = camera;
     this.sunlight = sunlight;
     this.sunDirection = sunDirection.clone().normalize();
-    this.object = new THREE.Group();
-    this.cloudGroup = new THREE.Group();
+    this.object = new Group();
+    this.cloudGroup = new Group();
     this.currentCloudCellX = Number.NaN;
     this.currentCloudCellZ = Number.NaN;
 
-    this.cloudGeometry = new THREE.BoxGeometry(1, 1, 1);
-    this.cloudMaterial = new THREE.MeshLambertMaterial({
+    this.cloudGeometry = new BoxGeometry(1, 1, 1);
+    this.cloudMaterial = new MeshLambertMaterial({
       color: 0xf9fdff,
       fog: false
     });

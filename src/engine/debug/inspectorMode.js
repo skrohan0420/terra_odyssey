@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import { Vector3 } from "three";
 
 export class InspectorMode {
 
@@ -10,9 +10,9 @@ export class InspectorMode {
         this.enabled = false;
 
         this.speed = 80;
-        this.direction = new THREE.Vector3();
-        this.forward = new THREE.Vector3();
-        this.right = new THREE.Vector3();
+        this.direction = new Vector3();
+        this.forward = new Vector3();
+        this.right = new Vector3();
         this.keys = {};
 
         window.addEventListener("keydown", (e) => this.onKeyDown(e));
