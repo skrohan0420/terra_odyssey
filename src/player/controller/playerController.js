@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import { Euler, Vector3 } from "three";
 import {
   CONTROLLER_SENSiTIVITY,
   PLAYER_EYE_HEIGHT,
@@ -30,7 +30,7 @@ export class PlayerController {
     this.sensitivity = CONTROLLER_SENSiTIVITY;
 
     // Rotation
-    this.euler = new THREE.Euler(0, 0, 0, "YXZ");
+    this.euler = new Euler(0, 0, 0, "YXZ");
     this.euler.setFromQuaternion(this.camera.quaternion);
     this.yaw = this.euler.y;
     this.pitch = this.euler.x;
@@ -40,9 +40,9 @@ export class PlayerController {
     this.jumpQueued = false;
 
     // Reusable vectors
-    this.direction = new THREE.Vector3();
-    this.forward = new THREE.Vector3();
-    this.right = new THREE.Vector3();
+    this.direction = new Vector3();
+    this.forward = new Vector3();
+    this.right = new Vector3();
 
     this.verticalVelocity = 0;
     this.isGrounded = false;

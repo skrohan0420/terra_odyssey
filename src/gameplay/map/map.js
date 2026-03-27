@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import { Vector3 } from "three";
 import { CHUNK_SIZE } from "../../config/worldConfig";
 import {
     WORLD_MAP_CANVAS_SIZE,
@@ -23,7 +23,7 @@ export class WorldMap {
         this.zoomLevels = WORLD_MAP_ZOOM_LEVELS;
         this.zoomIndex = WORLD_MAP_DEFAULT_ZOOM_INDEX;
         this.chunkTileCache = new Map();
-        this.forward = new THREE.Vector3();
+        this.forward = new Vector3();
 
         this.setupUi();
 

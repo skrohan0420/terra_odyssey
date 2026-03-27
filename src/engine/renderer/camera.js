@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import { PerspectiveCamera } from "three";
 import {
   CAMERA_FAR_PALE,
   CAMERA_FOV,
@@ -7,7 +7,7 @@ import {
 } from "../../config/graphicsConfig";
 
 export function createCamera(savedState) {
-  const camera = new THREE.PerspectiveCamera(
+  const camera = new PerspectiveCamera(
     CAMERA_FOV,
     window.innerWidth / window.innerHeight,
     CAMERA_NEAR_PALE,

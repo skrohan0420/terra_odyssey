@@ -1,4 +1,9 @@
-import * as THREE from "three";
+import {
+  CanvasTexture,
+  MeshLambertMaterial,
+  NearestFilter,
+  SRGBColorSpace
+} from "three";
 
 export const TEXTURE_SIZE = 8;
 
@@ -25,17 +30,17 @@ export function paintTexture(drawPixel) {
     }
   }
 
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.magFilter = THREE.NearestFilter;
-  texture.minFilter = THREE.NearestFilter;
+  const texture = new CanvasTexture(canvas);
+  texture.colorSpace = SRGBColorSpace;
+  texture.magFilter = NearestFilter;
+  texture.minFilter = NearestFilter;
   texture.generateMipmaps = false;
 
   return texture;
 }
 
 export function createLambertMaterial(texture) {
-  return new THREE.MeshLambertMaterial({
+  return new MeshLambertMaterial({
     map: texture,
     dithering: true
   });

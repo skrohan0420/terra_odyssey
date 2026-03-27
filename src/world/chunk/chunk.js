@@ -1,15 +1,15 @@
-import * as THREE from "three";
+import { BoxGeometry, Group, InstancedMesh, Object3D } from "three";
 import { BLOCK_SIZE, CHUNK_SIZE } from "../../config/worldConfig";
 import { getHeight } from "../generation/noise";
 import { getBlockEntry, RENDERABLE_BLOCKS } from "../block/blockRegistry";
 import { BLOCK_IDS } from "../block/blockTypes";
 
-const geometry = new THREE.BoxGeometry(BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+const geometry = new BoxGeometry(BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
 
-const dummy = new THREE.Object3D();
+const dummy = new Object3D();
 
 function createBlockMesh(materials, capacity) {
-  const mesh = new THREE.InstancedMesh(geometry, materials, capacity);
+  const mesh = new InstancedMesh(geometry, materials, capacity);
   return mesh;
 }
 
@@ -49,7 +49,7 @@ export function generateChunk(scene, chunkX, chunkZ) {
   const offsetZ = chunkZ * CHUNK_SIZE;
   const columnCount = CHUNK_SIZE * CHUNK_SIZE;
 
-  const chunk = new THREE.Group();
+  const chunk = new Group();
   const meshEntries = createChunkMeshes(chunk, columnCount);
 
   const surfaceHeights = new Int16Array(columnCount);
