@@ -2,51 +2,48 @@
 
 Terra Odyssey is a browser-based 3D voxel world prototype built with Vite and Three.js. It focuses on the core foundations of a sandbox exploration game: procedural terrain, chunk streaming, first-person movement, lightweight persistence, debug tooling, and an in-game topographic world map.
 
-The project is currently at prototype stage, but the main gameplay loop already works: load into a generated world, move through it in first person, stream terrain around the camera, inspect performance, and open a live map of the loaded chunks.
+The project is still in prototype stage, but the main exploration loop is already playable: load into a seeded world, move through it in first person, stream chunks around the camera, inspect performance, switch biome generation modes, and view a live map of the currently loaded terrain.
 
-## What This Project Does
+## What The Project Does
 
-- Generates terrain from a deterministic seeded noise function
-- Builds the world in chunk-sized sections around the player
-- Renders blocks using Three.js instanced meshes for efficiency
-- Supports first-person exploration with mouse look, walking, sprinting, and jumping
-- Persists player position and rotation in `localStorage`
-- Includes a debug overlay for FPS and render stats
-- Includes a world map overlay with zoom and terrain shading
+- Generates a deterministic seeded voxel world
+- Streams chunk-sized terrain around the player
+- Renders blocks with Three.js instanced meshes
+- Supports first-person movement with walking, sprinting, jumping, gravity, and stepping
+- Saves player position and rotation to `localStorage`
+- Includes a debug overlay with FPS, render stats, current biome, and biome-mode controls
+- Includes a topographic world map with biome-aware coloring
 - Provides an inspector/free-fly mode for debugging the scene
 
-## Tech Stack
-
-- [Vite](https://vitejs.dev/) for local development and bundling
-- [Three.js](https://threejs.org/) for rendering and scene management
-- [stats.js](https://github.com/mrdoob/stats.js/) for performance monitoring
-- `better-sqlite3` is present in the repository, but the current runtime path uses browser `localStorage` for saves
-
-## Current Status
-
-This repository is best thought of as a strong engine/gameplay prototype rather than a finished game. The playable path works and the project builds successfully, but several planned systems are still placeholders.
+## Current Feature Set
 
 Implemented today:
 
-- Procedural terrain generation
-- Chunk loading and unloading around the player
-- Block materials and simple terrain layering
-- Camera + renderer bootstrap
-- Player controller with gravity, jumping, and stepping
-- Static sky, sun, and cloud presentation
-- Debug overlay and inspector mode
-- Topographic world map
+- Procedural terrain with smooth biome transitions
+- Four surface biomes: plains, desert, hills, mountains
+- Shared terrain generator used by chunk building, player grounding, and the map
+- Chunk mesh generation separated from terrain sampling
+- World base height / waterline tuned around `64`
+- Larger vertical terrain scale with hills up to `150` and mountains up to `200`
+- Debug overlay biome readout plus biome selection dropdown
+- Natural mixed-world mode and forced single-biome test modes
+- Static sky, sun, cloud presentation, and world lighting
 - Player state save/load
 
-Still incomplete or stubbed:
+Still early or incomplete:
 
-- Biomes
-- Terrain generator abstraction
-- Chunk mesh builder abstraction
-- Player physics module split-out
-- Input/time/world state systems
-- Full gameplay loop beyond exploration
-- Documentation for deployment, testing, and contribution workflows
+- No trees, structures, rivers, caves, or interactive block gameplay yet
+- No combat, crafting, inventory, or broader game loop systems yet
+- No automated tests or lint scripts yet
+- Some modules are still prototype-oriented and need more tuning/docs
+
+## Tech Stack
+
+- [Vite](https://vitejs.dev/) for development and production bundling
+- [Three.js](https://threejs.org/) for rendering and scene management
+- [stats.js](https://github.com/mrdoob/stats.js/) for performance monitoring
+- Browser `localStorage` for active save data
+- `better-sqlite3` exists in the repository, but it is not part of the current browser gameplay path
 
 ## Getting Started
 
@@ -97,67 +94,119 @@ When inspector mode is active, the regular grounded controller is disabled and t
 - `W`, `A`, `S`, `D` to move horizontally
 - `Q` / `E` to move vertically
 
+## Debug Overlay
+
+The debug overlay is one of the most useful parts of the prototype right now. It shows:
+
+- FPS
+- draw calls
+- triangle count
+- memory stats
+- camera position
+- current chunk
+- current biome under the player
+- loaded chunk count
+- inspector state
+
+It also includes a biome-mode dropdown:
+
+- `Random Natural World`
+  Uses the normal mixed-biome terrain pipeline.
+- `Plains`, `Desert`, `Hills`, `Mountains`
+  Forces the whole generated world to that biome, which is useful for tuning terrain shapes and materials.
+
 ## Project Structure
 
 ```text
 src/
   app/          Application bootstrap
-  config/       Rendering, player, and world tuning values
+  config/       Rendering, player, world, and generation tuning values
   database/     Experimental SQLite files and scripts
   engine/       Renderer, scene setup, game loop, debug tools
   gameplay/     Map overlay and gameplay-facing UI modules
   player/       Player state and movement controller
   systems/      Update-driven runtime systems
-  world/        Blocks, chunks, and terrain generation
+  world/        Blocks, chunks, meshing, and terrain generation
 public/         Static assets
 dist/           Production build output
 ```
 
-## How The Runtime Fits Together
+## Runtime Overview
 
-The application entry point is `src/main.js`, which boots the game and starts the loop. From there, the project is divided into a few clear responsibilities:
+The application entry point is `src/main.js`, which boots the game and starts the loop. From there, the runtime is divided into a few clear responsibilities:
 
-- `app/bootstrap.js`
-  Creates the camera, scene, renderer, sky, world systems, debug overlay, map, and controller.
-- `engine/loop/gameLoop.js`
+- `src/app/bootstrap.js`
+  Creates the camera, scene, renderer, sky, terrain generator, chunk manager, map, controller, and debug overlay.
+- `src/engine/loop/gameLoop.js`
   Runs the per-frame update/render cycle.
-- `systems/systemManager.js`
+- `src/systems/systemManager.js`
   Updates registered systems every frame.
-- `systems/chunkStreamingSystem.js`
-  Checks the player position and asks the chunk manager to stream terrain in or out.
-- `world/chunk/chunkManager.js`
-  Tracks loaded chunks and updates visible chunk sets around the player.
-- `world/chunk/chunk.js`
-  Generates a chunk mesh and stores surface metadata used by the map.
-- `world/generation/noise.js`
-  Produces deterministic terrain heights from the world seed.
-- `player/controller/playerController.js`
-  Handles movement, camera rotation, gravity, stepping, and jumping.
-- `gameplay/map/map.js`
-  Draws the topographic world map from currently loaded chunk data.
+- `src/systems/chunkStreamingSystem.js`
+  Watches player movement and asks the chunk manager to load/unload nearby chunks.
+- `src/world/chunk/chunkManager.js`
+  Tracks loaded chunks and rebuilds them when the biome mode changes.
+- `src/world/chunk/chunk.js`
+  Thin chunk wrapper that requests generated data and stores map-facing surface metadata.
+- `src/world/chunk/chunkMeshBuilder.js`
+  Converts generated column data into instanced block meshes.
+- `src/player/controller/playerController.js`
+  Handles grounded movement, jumping, stepping, and camera rotation.
+- `src/gameplay/map/map.js`
+  Draws the world map from loaded chunk surface data.
+
+## Terrain Generation Architecture
+
+The terrain system is now split into clearer modules so generation stays maintainable as the world gets more complex:
+
+- `src/world/generation/biome.js`
+  Defines biome IDs, labels, colors, elevation bands, and surface rules.
+- `src/world/generation/terrainMath.js`
+  Shared clamp / interpolation helpers used across worldgen.
+- `src/world/generation/terrainSampling.js`
+  Samples climate fields and terrain shape signals from seeded noise.
+- `src/world/generation/terrainElevation.js`
+  Resolves biome weights and computes final heights from biome profiles.
+- `src/world/generation/terrainGenerator.js`
+  Main terrain API used by chunks, player grounding, and debug/map systems.
+- `src/world/chunk/chunkData.js`
+  Typed-array-backed storage for generated per-column chunk data.
+
+This separation matters because the world is no longer "just one height function." Biome choice, climate sampling, elevation shaping, surface material rules, and chunk meshing are all distinct responsibilities now.
 
 ## World Generation Notes
 
-The current terrain model is intentionally simple and readable:
+Current world generation highlights:
 
 - World seed: `420`
 - Chunk size: `16 x 16`
+- World height: `256`
+- Base height / waterline target: `64`
 - Render distance: `16` chunks
-- Terrain is sampled from a seeded noise function with multiple octaves
-- Terrain columns are layered with grass on top and dirt underneath
-- Stone can be revealed through chunk metadata helpers
+- Biomes: plains, desert, hills, mountains
+- Biomes transition smoothly by blending climate-driven weights rather than using hard borders
+- Natural mode uses mixed biomes; debug mode can force a single biome across the world
+- Terrain is stored as per-column chunk data and meshed afterward for efficiency
 
-The result is a lightweight sandbox terrain suitable for experimenting with rendering, controls, map systems, and world streaming.
+### Current Biome Height Bands
+
+- Plains: roughly `64` to `92`
+- Desert: roughly `64` to `104`
+- Hills: roughly `64` to `150`
+- Mountains: roughly `120` to `200`
+
+These are design targets from the biome profiles, not strict "every column hits both extremes" guarantees. Actual terrain still depends on noise, climate weights, and local shaping.
 
 ## Rendering Notes
 
 Some notable rendering choices in the current prototype:
 
 - Blocks are rendered with instanced meshes to reduce draw overhead
-- Textures are generated procedurally in code for grass, dirt, and stone
+- The chunk mesher uses typed-array-backed terrain data
+- Textures are generated procedurally in code for grass, dirt, stone, and sand
 - The scene uses ACES filmic tone mapping and sRGB output color space
 - The sky is a stylized static setup with a directional sun and cloud clusters
-- The world map is generated from per-chunk surface height data rather than a separate minimap camera
+- The world map is generated from chunk surface metadata rather than a separate minimap camera
+- Vendor/debug/map code is split into separate build chunks to keep the main app bundle cleaner
 
 ## Persistence
 
@@ -166,27 +215,28 @@ The active save path is browser-side:
 - Player position and rotation are written to `localStorage`
 - Save operations run on an interval and flush when the game stops
 
-There is also an experimental SQLite folder in `src/database`, but it is not currently wired into the browser game loop.
+There is also an experimental SQLite folder in `src/database`, but it is not currently wired into the browser runtime.
 
 ## Known Limitations
 
-- No tests or lint scripts are configured yet
-- The README was added after the core prototype work, so some modules still lack inline documentation
-- Several planned systems exist only as empty placeholder files
-- The production bundle currently triggers a chunk-size warning during build
-- Terrain interaction is minimal and gameplay systems are still early
+- No trees, foliage, structures, or water bodies yet
+- No block interaction, mining, building, or voxel editing yet
+- Terrain still needs visual tuning and feature passes to feel fully natural
+- No caves or underground generation yet
+- No automated tests or linting pipeline yet
+- The project is optimized for iteration and experimentation, not final-game completeness
 
-## Development Priorities
+## Good Next Steps
 
-Good next steps for the project would be:
+Strong next directions for the project would be:
 
-1. Replace placeholder modules with real world/gameplay systems
-2. Separate terrain generation from chunk mesh construction more cleanly
-3. Add proper collision and block interaction systems
-4. Expand terrain variety with biomes, materials, and structures
-5. Add tests for world generation and chunk management
-6. Introduce code splitting and optimization for the build output
-7. Decide whether persistence should remain in `localStorage` or move to a real backend/save format
+1. Add water, rivers, and erosion-style shaping
+2. Add biome features such as trees, rocks, cacti, and grass clutter
+3. Expand the surface system with more blocks and materials
+4. Add structures and chunk-safe feature placement rules
+5. Add caves and underground generation as a separate system
+6. Add tests for terrain generation, chunk meshing, and chunk streaming
+7. Keep tuning biome weights and elevation profiles based on visual playtesting
 
 ## Available Scripts
 
@@ -196,12 +246,12 @@ Good next steps for the project would be:
 
 ## Why This Repo Is Useful
 
-Terra Odyssey is a good base project if you want to study or extend:
+Terra Odyssey is a strong base project if you want to study or extend:
 
 - chunked voxel terrain rendering
 - Three.js world streaming patterns
-- browser-based first-person exploration controls
+- procedural biome generation in the browser
 - debug-first prototyping workflows
 - topographic map rendering from gameplay data
 
-It is small enough to understand in one sitting, but structured enough to grow into a more complete sandbox or survival-style game.
+It is still small enough to understand without a huge codebase, but it now has enough structure to grow into a much richer sandbox world.

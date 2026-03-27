@@ -5,6 +5,7 @@ import {
   CAMERA_NEAR_PALE,
   MAX_RENDER_PIXEL_RATIO
 } from "../../config/graphicsConfig";
+import { WORLD_BASE_HEIGHT } from "../../config/worldConfig";
 
 export function createCamera(savedState) {
   const camera = new PerspectiveCamera(
@@ -30,8 +31,8 @@ export function createCamera(savedState) {
     return camera;
   }
 
-  camera.position.set(0, 40, 0);
-  camera.lookAt(100, 0, 0);
+  camera.position.set(0, WORLD_BASE_HEIGHT + 28, 0);
+  camera.lookAt(100, WORLD_BASE_HEIGHT + 4, 0);
 
   return camera;
 }

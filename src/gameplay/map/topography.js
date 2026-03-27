@@ -1,10 +1,12 @@
-import { CHUNK_SIZE } from "../../config/worldConfig";
+import { CHUNK_SIZE, WATER_LEVEL } from "../../config/worldConfig";
+import { getBiomeDefinition } from "../../world/generation/biome";
 
 const LOWLAND_COLOR = [66, 118, 84];
 const PLAIN_COLOR = [97, 148, 92];
 const HIGHLAND_COLOR = [144, 138, 103];
 const MOUNTAIN_COLOR = [166, 167, 172];
 const SNOW_COLOR = [232, 239, 244];
+const CONTOUR_STEP = 8;
 
 function clampChannel(value) {
   return Math.max(0, Math.min(255, Math.round(value)));
@@ -24,30 +26,61 @@ function sampleHeight(heights, x, z) {
   return heights[clampedZ * CHUNK_SIZE + clampedX];
 }
 
-function getBaseColor(height) {
-  if (height < 8) {
-    return mixColors(LOWLAND_COLOR, PLAIN_COLOR, height / 8);
+function sampleBiomeId(biomeIds, x, z) {
+  if (!biomeIds) return 0;
+
+  const clampedX = Math.max(0, Math.min(CHUNK_SIZE - 1, x));
+  const clampedZ = Math.max(0, Math.min(CHUNK_SIZE - 1, z));
+  return biomeIds[clampedZ * CHUNK_SIZE + clampedX];
+}
+
+function getHeightTint(height) {
+  if (height < WATER_LEVEL + 6) {
+    return mixColors(
+      LOWLAND_COLOR,
+      PLAIN_COLOR,
+      Math.max(0, height - (WATER_LEVEL - 10)) / 16
+    );
   }
 
-  if (height < 14) {
-    return mixColors(PLAIN_COLOR, HIGHLAND_COLOR, (height - 8) / 6);
+  if (height < WATER_LEVEL + 28) {
+    return mixColors(
+      PLAIN_COLOR,
+      HIGHLAND_COLOR,
+      (height - (WATER_LEVEL + 6)) / 22
+    );
   }
 
-  if (height < 20) {
-    return mixColors(HIGHLAND_COLOR, MOUNTAIN_COLOR, (height - 14) / 6);
+  if (height < WATER_LEVEL + 72) {
+    return mixColors(
+      HIGHLAND_COLOR,
+      MOUNTAIN_COLOR,
+      (height - (WATER_LEVEL + 28)) / 44
+    );
   }
 
-  return mixColors(MOUNTAIN_COLOR, SNOW_COLOR, Math.min((height - 20) / 8, 1));
+  return mixColors(
+    MOUNTAIN_COLOR,
+    SNOW_COLOR,
+    Math.min((height - (WATER_LEVEL + 72)) / 54, 1)
+  );
+}
+
+function getBaseColor(height, biomeId) {
+  const biome = getBiomeDefinition(biomeId);
+  const tint = getHeightTint(height);
+
+  return mixColors(biome.visual.mapColor, tint, 0.32);
 }
 
 function hasContourLine(heights, x, z, height) {
-  const contourBand = Math.floor(height / 4);
+  const contourBand = Math.floor(height / CONTOUR_STEP);
 
   return (
-    Math.floor(sampleHeight(heights, x + 1, z) / 4) !== contourBand ||
-    Math.floor(sampleHeight(heights, x - 1, z) / 4) !== contourBand ||
-    Math.floor(sampleHeight(heights, x, z + 1) / 4) !== contourBand ||
-    Math.floor(sampleHeight(heights, x, z - 1) / 4) !== contourBand
+    Math.floor(sampleHeight(heights, x + 1, z) / CONTOUR_STEP) !== contourBand ||
+    Math.floor(sampleHeight(heights, x - 1, z) / CONTOUR_STEP) !== contourBand ||
+    Math.floor(sampleHeight(heights, x, z + 1) / CONTOUR_STEP) !== contourBand ||
+    Math.floor(sampleHeight(heights, x, z - 1) / CONTOUR_STEP) !== contourBand
   );
 }
 
@@ -59,7 +92,7 @@ function applyReliefShading(baseColor, heights, x, z, height) {
 
   const slopeX = west - east;
   const slopeZ = north - south;
-  const relief = slopeX * 5 + slopeZ * 4;
+  const relief = slopeX * 4 + slopeZ * 3;
   const ridge = Math.max(
     Math.abs(height - east),
     Math.abs(height - west),
@@ -69,8 +102,8 @@ function applyReliefShading(baseColor, heights, x, z, height) {
 
   let shade = relief;
 
-  if (ridge >= 3) {
-    shade -= 4;
+  if (ridge >= 5) {
+    shade -= 5;
   }
 
   if (hasContourLine(heights, x, z, height)) {
@@ -97,8 +130,9 @@ export function createTopographyTile(surfaceData) {
     for (let x = 0; x < CHUNK_SIZE; x++) {
       const index = z * CHUNK_SIZE + x;
       const height = surfaceData.heights[index];
+      const biomeId = sampleBiomeId(surfaceData.biomeIds, x, z);
       const shaded = applyReliefShading(
-        getBaseColor(height),
+        getBaseColor(height, biomeId),
         surfaceData.heights,
         x,
         z,

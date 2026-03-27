@@ -137,6 +137,15 @@ export class WorldMap {
         this.render();
     }
 
+    invalidateTiles() {
+        this.chunkTileCache.clear();
+
+        if (this.visible) {
+            this.syncChunkTiles(true);
+            this.render();
+        }
+    }
+
     syncChunkTiles(force = false) {
         const chunks = this.getChunks() || [];
         const activeKeys = new Set();
