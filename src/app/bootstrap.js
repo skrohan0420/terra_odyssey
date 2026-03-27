@@ -19,8 +19,10 @@ import { SaveSystem } from "../systems/saveSystem";
 import { SystemManager } from "../systems/systemManager";
 import { WORLD_RENDER_DISTANCE } from "../config/worldConfig";
 import { ChunkManager } from "../world/chunk/chunkManager";
+import { createTerrainGenerator } from "../world/generation/terrainGenerator";
 
 export function bootstrapGame() {
+  const terrainGenerator = createTerrainGenerator();
   const camera = createCamera(loadPlayerState());
   const sunDirection = getStaticSunDirection(camera);
   const { scene, sunlight } = createScene(sunDirection);
@@ -30,19 +32,21 @@ export function bootstrapGame() {
   bindCameraResize(camera, renderer);
   scene.add(staticSky.object);
 
-  const chunkManager = new ChunkManager(scene, WORLD_RENDER_DISTANCE);
-  const controller = new PlayerController(camera, renderer.domElement);
+  const chunkManager = new ChunkManager(
+    scene,
+    WORLD_RENDER_DISTANCE,
+    terrainGenerator
+  );
+  const controller = new PlayerController(
+    camera,
+    renderer.domElement,
+    terrainGenerator
+  );
   const inspector = new InspectorMode(camera, controller, chunkManager);
   const worldMap = new WorldMap(
     () => chunkManager.getLoadedChunks(),
     () => camera.position,
     () => camera.quaternion
-  );
-  const debug = new DebugOverlay(
-    renderer,
-    camera,
-    () => chunkManager.getLoadedChunkCount(),
-    () => inspector.enabled
   );
 
   const systemManager = new SystemManager();
@@ -58,6 +62,34 @@ export function bootstrapGame() {
     )
   );
   const saveSystem = systemManager.register(new SaveSystem(camera));
+  const applyBiomeMode = (nextMode) => {
+    const previousMode = terrainGenerator.getBiomeMode();
+    const appliedMode = terrainGenerator.setBiomeMode(nextMode);
+
+    if (appliedMode === previousMode) {
+      return;
+    }
+
+    chunkManager.reloadAround(camera.position);
+    controller.verticalVelocity = 0;
+    controller.isGrounded = false;
+    camera.position.y = controller.getGroundHeight(
+      camera.position.x,
+      camera.position.z
+    );
+    worldMap.invalidateTiles();
+    chunkStreamingSystem.markChunkChanged();
+  };
+  const debug = new DebugOverlay(
+    renderer,
+    camera,
+    () => chunkManager.getLoadedChunkCount(),
+    () => inspector.enabled,
+    () => terrainGenerator.getBiomeLabel(camera.position.x, camera.position.z),
+    () => terrainGenerator.getBiomeMode(),
+    () => terrainGenerator.getBiomeModeOptions(),
+    applyBiomeMode
+  );
 
   const game = startGameLoop({
     scene,
@@ -77,6 +109,7 @@ export function bootstrapGame() {
     renderer,
     controller,
     inspector,
+    terrainGenerator,
     chunkManager,
     worldMap,
     debug,

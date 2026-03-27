@@ -22,7 +22,7 @@ export class InspectorMode {
     onKeyDown(e) {
         this.keys[e.code] = true;
 
-        if (e.altKey && e.key.toLowerCase() === "i") {
+        if (e.key.toLowerCase() === "i") {
             this.toggle();
         }
     }

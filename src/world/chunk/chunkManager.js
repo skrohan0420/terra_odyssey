@@ -3,10 +3,11 @@ import { CHUNK_SIZE } from "../../config/worldConfig";
 
 export class ChunkManager {
 
-    constructor(scene, renderDistance) {
+    constructor(scene, renderDistance, terrainGenerator) {
 
         this.scene = scene;
         this.renderDistance = renderDistance;
+        this.terrainGenerator = terrainGenerator;
 
         this.loadedChunks = new Map();
         this.loadedChunkList = [];
@@ -19,6 +20,29 @@ export class ChunkManager {
 
     worldToChunkCoord(value) {
         return Math.floor(value / CHUNK_SIZE);
+    }
+
+    disposeChunk(mesh) {
+        this.scene.remove(mesh);
+        mesh.traverse?.((object) => {
+            object.dispose?.();
+        });
+    }
+
+    clearLoadedChunks() {
+        for (const mesh of this.loadedChunks.values()) {
+            this.disposeChunk(mesh);
+        }
+
+        this.loadedChunks.clear();
+        this.loadedChunkList = [];
+    }
+
+    reloadAround(playerPosition) {
+        this.clearLoadedChunks();
+        this.currentPlayerChunk = { x: null, z: null };
+
+        return this.update(playerPosition);
     }
 
     update(playerPosition) {
@@ -62,7 +86,12 @@ export class ChunkManager {
 
                 if (!this.loadedChunks.has(key)) {
 
-                    const mesh = generateChunk(this.scene, chunkX, chunkZ);
+                    const mesh = generateChunk(
+                        this.scene,
+                        this.terrainGenerator,
+                        chunkX,
+                        chunkZ
+                    );
 
                     this.loadedChunks.set(key, mesh);
                 }
@@ -73,11 +102,7 @@ export class ChunkManager {
 
                 if (!newChunkSet.has(key)) {
 
-                    this.scene.remove(mesh);
-                    mesh.traverse?.((object) => {
-                        object.dispose?.();
-                    });
-
+                    this.disposeChunk(mesh);
                     this.loadedChunks.delete(key);
                 }
             }

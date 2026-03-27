@@ -19,6 +19,12 @@ const stonePalette = [
   [148, 153, 158]
 ];
 
+const sandPalette = [
+  [191, 170, 102],
+  [206, 186, 112],
+  [220, 199, 126]
+];
+
 function grassTone(x, y) {
   const patchX = Math.floor(x / 3);
   const patchY = Math.floor(y / 3);
@@ -35,6 +41,12 @@ function stoneTone(x, y) {
   const patchX = Math.floor(x / 2);
   const patchY = Math.floor(y / 2);
   return stonePalette[(patchX + patchY) % stonePalette.length];
+}
+
+function sandTone(x, y) {
+  const patchX = Math.floor(x / 3);
+  const patchY = Math.floor(y / 2);
+  return sandPalette[(patchX + patchY) % sandPalette.length];
 }
 
 function createGrassTopTexture() {
@@ -102,6 +114,23 @@ function createStoneTexture() {
   });
 }
 
+function createSandTexture() {
+  return paintTexture((x, y) => {
+    const base = sandTone(x, y);
+    let shade = borderShade(x, y, -5);
+
+    if ((y === 2 || y === 5) && x > 0 && x < 7) {
+      shade += 4;
+    }
+
+    if ((x === 2 && y === 4) || (x === 5 && y === 1)) {
+      shade -= 4;
+    }
+
+    return toStyle(base, shade);
+  });
+}
+
 export const BLOCK_DEFINITIONS = Object.freeze({
   [BLOCK_IDS.GRASS]: Object.freeze({
     id: BLOCK_IDS.GRASS,
@@ -116,7 +145,7 @@ export const BLOCK_DEFINITIONS = Object.freeze({
   [BLOCK_IDS.DIRT]: Object.freeze({
     id: BLOCK_IDS.DIRT,
     isSolid: true,
-    maxInstancesPerColumn: 3,
+    maxInstancesPerColumn: 5,
     textures: Object.freeze({
       all: createDirtTexture
     })
@@ -124,9 +153,17 @@ export const BLOCK_DEFINITIONS = Object.freeze({
   [BLOCK_IDS.STONE]: Object.freeze({
     id: BLOCK_IDS.STONE,
     isSolid: true,
-    maxInstancesPerColumn: 2,
+    maxInstancesPerColumn: 6,
     textures: Object.freeze({
       all: createStoneTexture
+    })
+  }),
+  [BLOCK_IDS.SAND]: Object.freeze({
+    id: BLOCK_IDS.SAND,
+    isSolid: true,
+    maxInstancesPerColumn: 6,
+    textures: Object.freeze({
+      all: createSandTexture
     })
   })
 });

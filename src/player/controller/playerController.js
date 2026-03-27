@@ -9,14 +9,14 @@ import {
   PLAYER_SPRINT_MULTIPLIER,
   PLAYER_WALK_SPEED
 } from "../../config/playerConfig";
-import { getHeight } from "../../world/generation/noise";
 
 export class PlayerController {
 
-  constructor(camera, domElement) {
+  constructor(camera, domElement, terrainGenerator) {
 
     this.camera = camera;
     this.domElement = domElement;
+    this.terrainGenerator = terrainGenerator;
     this.enabled = true;
 
     // Settings
@@ -203,7 +203,7 @@ export class PlayerController {
     const sampleX = this.getBlockCoord(x);
     const sampleZ = this.getBlockCoord(z);
 
-    return getHeight(sampleX, sampleZ) + this.eyeHeight - 0.5;
+    return this.terrainGenerator.getGroundHeight(sampleX, sampleZ) + this.eyeHeight - 0.5;
   }
 
   getBlockCoord(value) {

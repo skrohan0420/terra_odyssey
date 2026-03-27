@@ -20,4 +20,8 @@ export class ChunkStreamingSystem {
     this.chunkChanged = false;
     return didChange;
   }
+
+  markChunkChanged() {
+    this.chunkChanged = true;
+  }
 }
