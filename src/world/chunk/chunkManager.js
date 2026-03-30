@@ -25,7 +25,7 @@ export class ChunkManager {
     disposeChunk(mesh) {
         this.scene.remove(mesh);
         mesh.traverse?.((object) => {
-            object.dispose?.();
+            object.geometry?.dispose?.();
         });
     }
 

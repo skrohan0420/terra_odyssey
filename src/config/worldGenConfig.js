@@ -3,50 +3,50 @@ import { WORLD_BASE_HEIGHT, WORLD_HEIGHT } from "./worldConfig";
 export const WORLD_GEN_CONFIG = Object.freeze({
   climate: Object.freeze({
     warpX: Object.freeze({
-      frequency: 0.0008,
+      frequency: 0.0019,
       octaves: 2,
       persistence: 0.5,
       lacunarity: 2,
-      amplitude: 96,
+      amplitude: 22,
       offsetX: 7100,
       offsetZ: -5100
     }),
     warpZ: Object.freeze({
-      frequency: 0.0008,
+      frequency: 0.0019,
       octaves: 2,
       persistence: 0.5,
       lacunarity: 2,
-      amplitude: 96,
+      amplitude: 22,
       offsetX: 8830,
       offsetZ: -6010
     }),
     temperature: Object.freeze({
-      frequency: 0.00082,
-      octaves: 3,
+      frequency: 0.0027,
+      octaves: 2,
       persistence: 0.5,
       lacunarity: 2,
       offsetX: 1400,
       offsetZ: -2600
     }),
     moisture: Object.freeze({
-      frequency: 0.00095,
-      octaves: 3,
+      frequency: 0.003,
+      octaves: 2,
       persistence: 0.5,
       lacunarity: 2,
       offsetX: -3200,
       offsetZ: 1800
     }),
     ruggedness: Object.freeze({
-      frequency: 0.0014,
-      octaves: 3,
+      frequency: 0.0036,
+      octaves: 2,
       persistence: 0.52,
       lacunarity: 2,
       offsetX: 4100,
       offsetZ: -900
     }),
     peaks: Object.freeze({
-      frequency: 0.0018,
-      octaves: 4,
+      frequency: 0.0048,
+      octaves: 3,
       gain: 0.56,
       lacunarity: 2,
       offsetX: -5200,
@@ -119,20 +119,21 @@ export const WORLD_GEN_CONFIG = Object.freeze({
     maxSurfaceHeight: WORLD_HEIGHT - 1
   }),
   biomeWeights: Object.freeze({
-    blendFloor: 0.02,
-    plainsBase: 0.16,
-    mountainPeakStart: 0.54,
-    mountainPeakEnd: 0.84,
-    mountainRuggedStart: 0.4,
+    blendFloor: 0.003,
+    plainsBase: 0.1,
+    dominanceSharpness: 3.2,
+    mountainPeakStart: 0.66,
+    mountainPeakEnd: 0.88,
+    mountainRuggedStart: 0.52,
     mountainRuggedEnd: 0.8,
-    hillStart: 0.34,
-    hillEnd: 0.72,
-    hillPeakAssistStart: 0.3,
-    hillPeakAssistEnd: 0.64,
-    desertTempStart: 0.5,
-    desertTempEnd: 0.78,
-    desertMoistureStart: 0.22,
-    desertMoistureEnd: 0.48
+    hillStart: 0.48,
+    hillEnd: 0.74,
+    hillPeakAssistStart: 0.42,
+    hillPeakAssistEnd: 0.66,
+    desertTempStart: 0.62,
+    desertTempEnd: 0.84,
+    desertMoistureStart: 0.18,
+    desertMoistureEnd: 0.34
   }),
   surface: Object.freeze({
     fillerDepthNoise: Object.freeze({

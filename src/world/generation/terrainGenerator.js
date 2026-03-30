@@ -52,6 +52,8 @@ class TerrainGenerator {
       }
     }
 
+    this.populateChunkBorders(chunkData, offsetX, offsetZ);
+
     for (let z = 0; z < CHUNK_SIZE; z++) {
       for (let x = 0; x < CHUNK_SIZE; x++) {
         const worldX = offsetX + x;
@@ -85,6 +87,24 @@ class TerrainGenerator {
     }
 
     return chunkData;
+  }
+
+  populateChunkBorders(chunkData, offsetX, offsetZ) {
+    for (let x = 0; x < CHUNK_SIZE; x++) {
+      chunkData.northHeights[x] = this.getGroundHeight(offsetX + x, offsetZ - 1);
+      chunkData.southHeights[x] = this.getGroundHeight(
+        offsetX + x,
+        offsetZ + CHUNK_SIZE
+      );
+    }
+
+    for (let z = 0; z < CHUNK_SIZE; z++) {
+      chunkData.westHeights[z] = this.getGroundHeight(offsetX - 1, offsetZ + z);
+      chunkData.eastHeights[z] = this.getGroundHeight(
+        offsetX + CHUNK_SIZE,
+        offsetZ + z
+      );
+    }
   }
 
   getGroundHeight(worldX, worldZ) {
@@ -210,6 +230,22 @@ class TerrainGenerator {
   getChunkHeight(chunkData, x, z) {
     if (x >= 0 && x < CHUNK_SIZE && z >= 0 && z < CHUNK_SIZE) {
       return chunkData.heights[z * CHUNK_SIZE + x];
+    }
+
+    if (x < 0 && z >= 0 && z < CHUNK_SIZE) {
+      return chunkData.westHeights[z];
+    }
+
+    if (x >= CHUNK_SIZE && z >= 0 && z < CHUNK_SIZE) {
+      return chunkData.eastHeights[z];
+    }
+
+    if (z < 0 && x >= 0 && x < CHUNK_SIZE) {
+      return chunkData.northHeights[x];
+    }
+
+    if (z >= CHUNK_SIZE && x >= 0 && x < CHUNK_SIZE) {
+      return chunkData.southHeights[x];
     }
 
     const worldX = chunkData.chunkX * CHUNK_SIZE + x;

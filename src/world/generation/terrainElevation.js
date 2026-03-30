@@ -1,5 +1,5 @@
 import { BIOME_IDS, getBiomeDefinition } from "./biome";
-import { clamp, clamp01, lerp, smoothstep } from "./terrainMath";
+import { clamp, smoothstep } from "./terrainMath";
 
 const NATURAL_BIOME_IDS = Object.freeze([
   BIOME_IDS.PLAINS,
@@ -84,6 +84,23 @@ export function computeBiomeWeights(climate, config, out) {
     out[biomeId] /= totalWeight;
   }
 
+  const dominanceSharpness = weights.dominanceSharpness ?? 1;
+
+  if (dominanceSharpness !== 1) {
+    totalWeight = 0;
+
+    for (const biomeId of NATURAL_BIOME_IDS) {
+      out[biomeId] = Math.pow(out[biomeId], dominanceSharpness);
+      totalWeight += out[biomeId];
+    }
+
+    if (totalWeight > 0) {
+      for (const biomeId of NATURAL_BIOME_IDS) {
+        out[biomeId] /= totalWeight;
+      }
+    }
+  }
+
   return out;
 }
 
@@ -101,32 +118,44 @@ export function getDominantBiomeId(weights) {
   return dominantBiomeId;
 }
 
+function toCenteredValue(value) {
+  return value * 2 - 1;
+}
+
+function toPositiveFeature(value, floor = 0.35) {
+  return Math.max(0, (value - floor) / (1 - floor));
+}
+
 export function computeBiomeHeight(biomeId, climate, signals, config) {
   const biome = getBiomeDefinition(biomeId);
   const elevation = biome.elevation;
-  const rawProfile =
-    elevation.bias +
-    signals.macro * elevation.macroWeight +
-    signals.rolling * elevation.rollingWeight +
-    signals.detail * elevation.detailWeight +
-    signals.ridge * elevation.ridgeWeight +
-    signals.dune * elevation.duneWeight +
-    climate.temperature * elevation.temperatureWeight +
-    climate.moisture * elevation.moistureWeight +
-    climate.ruggedness * elevation.ruggednessWeight +
-    climate.peaks * elevation.peaksWeight;
-  const normalizedProfile = clamp01(rawProfile);
-  const shapedProfile = Math.pow(
-    normalizedProfile,
-    elevation.profileExponent ?? 1
-  );
+  const centeredMacro = toCenteredValue(signals.macro);
+  const centeredRolling = toCenteredValue(signals.rolling);
+  const centeredDetail = toCenteredValue(signals.detail);
+  const centeredTemperature = toCenteredValue(climate.temperature);
+  const centeredMoisture = toCenteredValue(climate.moisture);
+  const centeredRuggedness = toCenteredValue(climate.ruggedness);
+  const centeredPeaks = toCenteredValue(climate.peaks);
+  const ridgeStrength = toPositiveFeature(signals.ridge, 0.28);
+  const duneStrength = toPositiveFeature(signals.dune, 0.42);
+
+  const height =
+    config.height.baseHeight +
+    elevation.baseOffset +
+    centeredMacro * elevation.macroAmplitude +
+    centeredRolling * elevation.rollingAmplitude +
+    centeredDetail * elevation.detailAmplitude +
+    ridgeStrength * elevation.ridgeAmplitude +
+    duneStrength * elevation.duneAmplitude +
+    centeredTemperature * elevation.temperatureOffset +
+    centeredMoisture * elevation.moistureOffset +
+    centeredRuggedness * elevation.ruggednessOffset +
+    centeredPeaks * elevation.peaksOffset;
 
   return clamp(
-    Math.round(
-      lerp(elevation.minHeight, elevation.maxHeight, shapedProfile)
-    ),
-    config.height.minSurfaceHeight,
-    config.height.maxSurfaceHeight
+    Math.round(height),
+    Math.max(config.height.minSurfaceHeight, elevation.minHeight),
+    Math.min(config.height.maxSurfaceHeight, elevation.maxHeight)
   );
 }
 

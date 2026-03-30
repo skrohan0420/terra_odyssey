@@ -16,6 +16,10 @@ export function createChunkData(chunkX, chunkZ, chunkSize = CHUNK_SIZE) {
     fillerDepths: new Uint8Array(columnCount),
     slopeValues: new Uint8Array(columnCount),
     bottomHeights: new Int16Array(columnCount),
+    northHeights: new Int16Array(chunkSize),
+    southHeights: new Int16Array(chunkSize),
+    westHeights: new Int16Array(chunkSize),
+    eastHeights: new Int16Array(chunkSize),
     minHeight: Number.POSITIVE_INFINITY,
     maxHeight: Number.NEGATIVE_INFINITY
   };

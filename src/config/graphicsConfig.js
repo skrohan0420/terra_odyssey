@@ -1,8 +1,15 @@
+import { CHUNK_SIZE, WORLD_RENDER_DISTANCE } from "./worldConfig";
+
+const CHUNK_WORLD_RADIUS = WORLD_RENDER_DISTANCE * CHUNK_SIZE;
+const HORIZON_MARGIN = CHUNK_SIZE * 5;
+
 export const CAMERA_FOV = 50;
-export const CAMERA_FAR_PALE = 500;
-export const CAMERA_NEAR_PALE = 0.1;
+export const CAMERA_NEAR_PALE = 0.2;
+export const CAMERA_FAR_PALE = CHUNK_WORLD_RADIUS + HORIZON_MARGIN;
+export const HORIZON_FOG_START = Math.floor(CHUNK_WORLD_RADIUS * 0.72);
+export const HORIZON_FOG_END = CAMERA_FAR_PALE - 6;
 export const MAX_RENDER_PIXEL_RATIO = 1.5;
-export const SKY_CLOUD_LAYER_Y = 200;
+export const SKY_CLOUD_LAYER_Y = 300;
 export const SKY_CLOUD_CELL_SIZE = 180;
 export const SKY_CLOUD_GRID_RADIUS = 2;
 export const SKY_SUN_DISTANCE = 360;

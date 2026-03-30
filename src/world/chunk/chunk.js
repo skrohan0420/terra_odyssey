@@ -1,13 +1,8 @@
-import { CHUNK_SIZE } from "../../config/worldConfig";
-import { BLOCK_IDS } from "../block/blockTypes";
-import {
-  appendBlockInstance,
-  buildChunkMesh
-} from "./chunkMeshBuilder";
+import { buildChunkMesh } from "./chunkMeshBuilder";
 
 export function generateChunk(scene, terrainGenerator, chunkX, chunkZ) {
   const chunkData = terrainGenerator.generateChunkData(chunkX, chunkZ);
-  const { chunk, meshEntries } = buildChunkMesh(chunkData);
+  const { chunk } = buildChunkMesh(chunkData);
 
   chunk.userData = {
     chunkX,
@@ -20,11 +15,6 @@ export function generateChunk(scene, terrainGenerator, chunkX, chunkZ) {
       fillerBlockIds: chunkData.fillerBlockIds,
       minHeight: chunkData.minHeight,
       maxHeight: chunkData.maxHeight
-    },
-    revealBlock(worldX, worldZ, y) {
-      if (y < 0) return;
-
-      appendBlockInstance(meshEntries, BLOCK_IDS.STONE, worldX, y, worldZ);
     }
   };
 
