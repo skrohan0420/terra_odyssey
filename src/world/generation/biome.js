@@ -21,17 +21,16 @@ export const BIOME_DEFINITIONS = Object.freeze({
     elevation: Object.freeze({
       minHeight: WORLD_BASE_HEIGHT,
       maxHeight: 92,
-      bias: 0.05,
-      macroWeight: 0.18,
-      rollingWeight: 0.2,
-      detailWeight: 0.06,
-      ridgeWeight: 0.03,
-      duneWeight: 0,
-      temperatureWeight: 0.02,
-      moistureWeight: 0.08,
-      ruggednessWeight: -0.12,
-      peaksWeight: -0.16,
-      profileExponent: 1.28
+      baseOffset: 4,
+      macroAmplitude: 8,
+      rollingAmplitude: 6,
+      detailAmplitude: 2,
+      ridgeAmplitude: 2,
+      duneAmplitude: 0,
+      temperatureOffset: 1,
+      moistureOffset: 2,
+      ruggednessOffset: -4,
+      peaksOffset: -5
     }),
     surface: Object.freeze({
       topBlockId: BLOCK_IDS.GRASS,
@@ -39,7 +38,7 @@ export const BIOME_DEFINITIONS = Object.freeze({
       stoneBlockId: BLOCK_IDS.STONE,
       fillerDepthMin: 3,
       fillerDepthMax: 5,
-      stoneSlopeThreshold: 8,
+      stoneSlopeThreshold: 10,
       stoneHeightThreshold: Number.POSITIVE_INFINITY
     })
   }),
@@ -53,17 +52,16 @@ export const BIOME_DEFINITIONS = Object.freeze({
     elevation: Object.freeze({
       minHeight: WORLD_BASE_HEIGHT,
       maxHeight: 104,
-      bias: 0.08,
-      macroWeight: 0.16,
-      rollingWeight: 0.14,
-      detailWeight: 0.05,
-      ridgeWeight: 0.04,
-      duneWeight: 0.36,
-      temperatureWeight: 0.08,
-      moistureWeight: -0.18,
-      ruggednessWeight: -0.04,
-      peaksWeight: -0.1,
-      profileExponent: 1.16
+      baseOffset: 5,
+      macroAmplitude: 7,
+      rollingAmplitude: 5,
+      detailAmplitude: 1,
+      ridgeAmplitude: 2,
+      duneAmplitude: 8,
+      temperatureOffset: 3,
+      moistureOffset: -5,
+      ruggednessOffset: -2,
+      peaksOffset: -5
     }),
     surface: Object.freeze({
       topBlockId: BLOCK_IDS.SAND,
@@ -71,7 +69,7 @@ export const BIOME_DEFINITIONS = Object.freeze({
       stoneBlockId: BLOCK_IDS.STONE,
       fillerDepthMin: 4,
       fillerDepthMax: 7,
-      stoneSlopeThreshold: 8,
+      stoneSlopeThreshold: 10,
       stoneHeightThreshold: Number.POSITIVE_INFINITY
     })
   }),
@@ -85,17 +83,16 @@ export const BIOME_DEFINITIONS = Object.freeze({
     elevation: Object.freeze({
       minHeight: WORLD_BASE_HEIGHT,
       maxHeight: 150,
-      bias: 0.1,
-      macroWeight: 0.24,
-      rollingWeight: 0.22,
-      detailWeight: 0.1,
-      ridgeWeight: 0.3,
-      duneWeight: 0,
-      temperatureWeight: 0,
-      moistureWeight: 0.03,
-      ruggednessWeight: 0.24,
-      peaksWeight: 0.12,
-      profileExponent: 0.94
+      baseOffset: 16,
+      macroAmplitude: 16,
+      rollingAmplitude: 13,
+      detailAmplitude: 3,
+      ridgeAmplitude: 14,
+      duneAmplitude: 0,
+      temperatureOffset: 0,
+      moistureOffset: 1,
+      ruggednessOffset: 8,
+      peaksOffset: 8
     }),
     surface: Object.freeze({
       topBlockId: BLOCK_IDS.GRASS,
@@ -103,8 +100,8 @@ export const BIOME_DEFINITIONS = Object.freeze({
       stoneBlockId: BLOCK_IDS.STONE,
       fillerDepthMin: 3,
       fillerDepthMax: 5,
-      stoneSlopeThreshold: 5,
-      stoneHeightThreshold: 116
+      stoneSlopeThreshold: 8,
+      stoneHeightThreshold: 136
     })
   }),
   [BIOME_IDS.MOUNTAINS]: Object.freeze({
@@ -117,17 +114,16 @@ export const BIOME_DEFINITIONS = Object.freeze({
     elevation: Object.freeze({
       minHeight: 120,
       maxHeight: 200,
-      bias: 0.08,
-      macroWeight: 0.18,
-      rollingWeight: 0.12,
-      detailWeight: 0.08,
-      ridgeWeight: 0.48,
-      duneWeight: 0,
-      temperatureWeight: -0.02,
-      moistureWeight: 0,
-      ruggednessWeight: 0.2,
-      peaksWeight: 0.36,
-      profileExponent: 0.78
+      baseOffset: 44,
+      macroAmplitude: 18,
+      rollingAmplitude: 10,
+      detailAmplitude: 4,
+      ridgeAmplitude: 36,
+      duneAmplitude: 0,
+      temperatureOffset: -1,
+      moistureOffset: 0,
+      ruggednessOffset: 8,
+      peaksOffset: 18
     }),
     surface: Object.freeze({
       topBlockId: BLOCK_IDS.GRASS,
@@ -135,8 +131,8 @@ export const BIOME_DEFINITIONS = Object.freeze({
       stoneBlockId: BLOCK_IDS.STONE,
       fillerDepthMin: 2,
       fillerDepthMax: 4,
-      stoneSlopeThreshold: 4,
-      stoneHeightThreshold: 146
+      stoneSlopeThreshold: 6,
+      stoneHeightThreshold: 170
     })
   })
 });
